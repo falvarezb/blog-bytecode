@@ -7,12 +7,12 @@ import scala.collection.mutable.{ListBuffer, Set}
   * This trait extends MutableGraphTraversal (which is more performant than the immutable version) to
   * modify `findPath` in such a way that different paths share knowledge of vertices already visited
   */
-trait SharedKnowledgeGraphTraversal[T] extends MutableGraphTraversal[T]{
+trait SharedKnowledgeGraphTraversal[T] extends GraphTraversal[T]{
 
-  override def findPath(seed: Seq[Path]): Path = {
+  override def findPath(from: Seq[Path]): Path = {
 
-    val paths: ListBuffer[Path] = ListBuffer() ++= seed
-    val exploredVertices: Set[Vertex] = mutable.Set()
+    val paths: ListBuffer[Path] = ListBuffer() ++= from
+    val exploredVertices: Set[Vertex] = mutable.Set(from.flatten: _*)
 
     def next(): Path = paths.headOption match{
       case None => Nil
@@ -21,11 +21,11 @@ trait SharedKnowledgeGraphTraversal[T] extends MutableGraphTraversal[T]{
         else {
           val currentVertex = currentVertexPath.head
           //.filterNot(exploredVertices.contains(_)) is less generic as it is not valid for negative binary or optimal change
-          val neighbourVertices = neighbours(currentVertex).filterNot(exploredVertices.contains(_))
+          val neighbourVertices = neighbours(currentVertex).filterNot(exploredVertices.contains(_)).filter(isVertexEligibleForPath(_, currentVertexPath))
           val pathsToNeighbourVertices = neighbourVertices.map(_ :: currentVertexPath)
           paths.remove(0)
           addNeighbours(paths, pathsToNeighbourVertices)
-          exploredVertices += currentVertex
+          exploredVertices ++= neighbourVertices
           next()
         }
     }

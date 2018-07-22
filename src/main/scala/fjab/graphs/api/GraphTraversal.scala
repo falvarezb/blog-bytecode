@@ -1,5 +1,7 @@
 package fjab.graphs.api
 
+import scala.collection.mutable.ListBuffer
+
 trait GraphTraversal[T] {
 
   type Vertex = T
@@ -13,16 +15,38 @@ trait GraphTraversal[T] {
     * The process to calculate the neighbours of a given vertex is specific for every type of graph and is implemented
     * by the method 'neighbours'. The method 'isVertexEligibleForPath' filters the neighbours that are eligible to be
     * included in the present path (for instance, in most cases it is desirable not to visit twice the same vertex).
+    * The method 'addNeighbours' determines the way the graph is traversed: breadth-first or depth-first.
+    *
     *
     * It is worth noticing that the present algorithm to traverse the graph is very generic and therefore sub-optimal
     * for problems like finding the shortest path between 2 vertices as the different paths do not share information
     * about vertices already visited.
     *
     *
-    * @param seed Initial vertices used to calculate the possible paths
+    * @param from Initial vertices used to calculate the possible paths
     * @return Path The searched path or Nil if the desired path does not exist
     */
-  def findPath(seed: Seq[Path]): Path
+  def findPath(from: Seq[Path]): Path = {
+
+    val paths: ListBuffer[Path] = ListBuffer() ++= from
+
+    def next(): Path = paths.headOption match{
+      case None => Nil
+      case Some(currentVertexPath) =>
+        if(isSolution(currentVertexPath)) currentVertexPath.reverse
+        else {
+          val currentVertex = currentVertexPath.head
+          val neighbourVertices = neighbours(currentVertex).filter(isVertexEligibleForPath(_, currentVertexPath))
+          val pathsToNeighbourVertices = neighbourVertices.map(_ :: currentVertexPath)
+          paths.remove(0)
+          addNeighbours(paths, pathsToNeighbourVertices)
+          next()
+        }
+    }
+
+    next()
+
+  }
 
   /**
     * Calculate the neighbours of the given vertex.
@@ -30,6 +54,19 @@ trait GraphTraversal[T] {
     * constraints, etc.
     */
   def neighbours(vertex: Vertex): List[Vertex]
+
+  /**
+    * This method adds the neighbours of the current vertex to the list of remaining vertices to explore and
+    * determines the algorithm to traverse the graph, depth-first or breadth-first.
+    *
+    * Depending on whether the new paths are added in front of the list or at the end, the resulting traversing
+    * algorithm will be depth-first or breadth-first respectively.
+    *
+    * Breadth-first algorithms are necessary to find the shortest path between 2 vertices or when looking
+    * for paths in an infinite graph
+    *
+    */
+  def addNeighbours(verticesToExplore: ListBuffer[Path], neighbours: List[Path]): Unit
 
 
   /**

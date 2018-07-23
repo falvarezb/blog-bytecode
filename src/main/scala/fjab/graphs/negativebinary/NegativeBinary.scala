@@ -11,9 +11,9 @@ trait NegativeBinary extends GraphTraversal[Int]{
 
   val moves: List[Int] = List(0, 1)
 
-  override def neighbours(vertex: Vertex): List[Vertex] = moves
+  override def neighbours(vertex: Vertex): Seq[Vertex] = moves
 
-  override def addNeighbours(verticesToExplore: ListBuffer[Path], neighbours: List[Path]) =
+  override def addNeighbours(verticesToExplore: ListBuffer[Path], neighbours: Seq[Path]): Unit =
     verticesToExplore ++= neighbours
 
   override def isSolution(path: Path): Boolean =

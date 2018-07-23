@@ -9,6 +9,6 @@ trait FiniteChessBoard extends InfiniteChessBoard{
 
   self: BoardDim =>
 
-  override def neighbours(coordinate: Coordinate): List[Coordinate] =
+  override def neighbours(coordinate: Coordinate): Seq[(Coin, Coin)] =
     super.neighbours(coordinate).filter{ case (v, w) => v >= 0 && v<x && w >=0 && w<y }
 }

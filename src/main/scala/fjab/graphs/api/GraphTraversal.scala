@@ -53,7 +53,7 @@ trait GraphTraversal[T] {
     * Implementations of this method depend on the nature of the graph: moves allowed from one vertex to another, 
     * constraints, etc.
     */
-  def neighbours(vertex: Vertex): List[Vertex]
+  def neighbours(vertex: Vertex): Seq[Vertex]
 
   /**
     * This method adds the neighbours of the current vertex to the list of remaining vertices to explore and
@@ -66,7 +66,7 @@ trait GraphTraversal[T] {
     * for paths in an infinite graph
     *
     */
-  def addNeighbours(verticesToExplore: ListBuffer[Path], neighbours: List[Path]): Unit
+  def addNeighbours(verticesToExplore: ListBuffer[Path], neighbours: Seq[Path]): Unit
 
 
   /**

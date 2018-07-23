@@ -11,12 +11,12 @@ trait OptimalChange extends GraphTraversal[Coin]{
 
   val moves: List[Coin] = coins
 
-  override def neighbours(vertex: Int): List[Int] = moves
+  override def neighbours(vertex: Int): Seq[Vertex] = moves
 
   /**
     * The nature of the problem requires a breadth-first search in order to find the shortest path
     */
-  override def addNeighbours(verticesToExplore: ListBuffer[Path], neighbours: List[Path]) =
+  override def addNeighbours(verticesToExplore: ListBuffer[Path], neighbours: Seq[Path]): Unit =
     verticesToExplore ++= neighbours
 
   override def isSolution(path: Path): Boolean = amount == path.sum

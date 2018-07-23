@@ -13,7 +13,7 @@ trait KnightTour extends GraphTraversal[Coordinate]{
 
   self: FiniteChessBoard with BoardDim =>
 
-  override def addNeighbours(verticesToExplore: ListBuffer[Path], neighbours: List[Path]) =
+  override def addNeighbours(verticesToExplore: ListBuffer[Path], neighbours: Seq[Path]): Unit =
     verticesToExplore.prependAll(neighbours) //depth-first search
 
   override def isSolution(path: Path): Boolean = path.length == x * y

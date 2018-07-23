@@ -1,4 +1,4 @@
-package fjab.graphs.fjab.graphs.negativebinary
+package fjab.graphs.negativebinary
 
 import fjab.graphs.Amount
 import fjab.graphs.api.GraphTraversal

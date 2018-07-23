@@ -1,4 +1,4 @@
-package fjab.graphs.fjab.graphs.negativebinary
+package fjab.graphs.negativebinary
 
 import org.scalatest.FunSuite
 

@@ -1,6 +1,6 @@
 # blog-bytecode
 Examples used on my blog http://blog.bytecode.tech/
 
-## Alternating between different repositories and accounts
+## Branch graph
 
-https://help.github.com/articles/updating-credentials-from-the-osx-keychain/
+Contains content published on http://blog.bytecode.tech/the-power-of-generic-algorithms/

@@ -4,8 +4,8 @@ import scala.collection.mutable
 import scala.collection.mutable.{ListBuffer, Set}
 
 /**
-  * This trait extends MutableGraphTraversal (which is more performant than the immutable version) to
-  * modify `findPath` in such a way that different paths share knowledge of vertices already visited
+  * This trait extends GraphTraversal to modify `findPath` in such a way that different paths
+  * share knowledge of vertices already visited
   */
 trait SharedKnowledgeGraphTraversal[T] extends GraphTraversal[T]{
 

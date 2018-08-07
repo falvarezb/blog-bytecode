@@ -11,7 +11,7 @@ import scala.collection.mutable.ListBuffer
  */
 trait ShortestPath extends GraphTraversal[Coordinate]{
 
-  self: DestinationVertex[Coordinate] =>
+  self: Destination[Coordinate] =>
 
   /**
    * The nature of the problem requires a breadth-first search in order to find the shortest path

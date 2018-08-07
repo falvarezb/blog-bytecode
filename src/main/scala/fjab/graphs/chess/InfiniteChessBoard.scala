@@ -5,7 +5,7 @@ import fjab.graphs.api.GraphTraversal
 
 
 /**
-  * Implementation of GraphTraversal corresponding to an infinite chess board
+  * Implementation of GraphTraversal representing an infinite chess board
   *
  */
 trait InfiniteChessBoard extends GraphTraversal[Coordinate]{
@@ -13,7 +13,7 @@ trait InfiniteChessBoard extends GraphTraversal[Coordinate]{
   //knight moves
   val moves: List[Coordinate] = List((2,1), (1,2), (-1,2), (-2,1), (-2,-1), (-1,-2), (1,-2), (2,-1))
 
-  override def neighbours(coordinate: Coordinate): Seq[(Coin, Coin)] = moves.map( coordinate + _)
+  override def neighbours(coordinate: Coordinate): Seq[Coordinate] = moves.map( coordinate + _)
 
   /**
     * Avoid an infinite loop by not visiting previously visited vertices in the present path

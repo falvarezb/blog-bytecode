@@ -11,6 +11,7 @@ trait GraphTraversal[T] {
   /**
     * This method traverses the graph and as it does so, builds all possible paths until finding the solution 
     * as per the definition of the method 'isSolution'.
+    * Note: the paths are stored on a mutable ListBuffer for efficiency
     *
     * The process to calculate the neighbours of a given vertex is specific for every type of graph and is implemented
     * by the method 'neighbours'. The method 'isVertexEligibleForPath' filters the neighbours that are eligible to be
@@ -59,7 +60,7 @@ trait GraphTraversal[T] {
     * This method adds the neighbours of the current vertex to the list of remaining vertices to explore and
     * determines the algorithm to traverse the graph, depth-first or breadth-first.
     *
-    * Depending on whether the new paths are added in front of the list or at the end, the resulting traversing
+    * Depending on whether the new paths are added at the front or the back of the list, the resulting traversing
     * algorithm will be depth-first or breadth-first respectively.
     *
     * Breadth-first algorithms are necessary to find the shortest path between 2 vertices or when looking

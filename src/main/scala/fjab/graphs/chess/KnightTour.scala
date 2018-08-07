@@ -6,9 +6,9 @@ import fjab.graphs.api.GraphTraversal
 import scala.collection.mutable.ListBuffer
 
 /**
-  * Implementation of GraphTraversal to find the shortest path between 2 vertices of the graph
+  * Implementation of GraphTraversal to find the path that visits all and every square just once
   *
- */
+  */
 trait KnightTour extends GraphTraversal[Coordinate]{
 
   self: FiniteChessBoard with BoardDim =>

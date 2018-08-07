@@ -19,9 +19,5 @@ trait NegativeBinary extends GraphTraversal[Int]{
   override def isSolution(path: Path): Boolean =
     path.reverse.zipWithIndex.foldLeft(0){case (acc, (vertex, idx)) => acc + vertex * BigInt(-2).pow(idx).toInt} == amount
 
-
-  /**
-    * By construction, a path can never visit the same vertex twice. Therefore, no extra filter is needed.
-    */
   override def isVertexEligibleForPath(vertex: Vertex, path: Path): Boolean = true
 }

@@ -1,3 +1,5 @@
+package fjabs
+
 object Types extends App {
 
   //Types are sets of values
@@ -22,7 +24,7 @@ object Types extends App {
   def absurd(x: Nothing): Int = 1
 
   //This statement does not compile
-  absurd()
+  //absurd()
 
   val unit: Unit => Unit = x => Unit
 

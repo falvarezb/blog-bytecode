@@ -21,19 +21,18 @@ object Types extends App {
       Absurd function as it can be declared but cannot be invoked as there is no value
       of type Nothing to pass as a parameter in the function invocation
    */
-  def absurd(x: Nothing): Int = 1
+  val absurd: Nothing => Int = _ => 1
 
   //This statement does not compile
   //absurd()
 
-  val unit: Unit => Unit = x => Unit
+  val unit: Unit => Unit = _ => ()
 
-  println(unit())
-  println(unit(Unit))
+  println(unit(()))
 
-  def unitMethod(x:Unit): Unit = Unit
-  println(unitMethod())
-  println(unitMethod(Unit))
+  //function parametrically polymorphic as the implementation is the same for any type
+  def unitMethod[T](x:T): Unit = ()
+  println(unitMethod(()))
 
   val noparams: () => String = () => "hello"
 }

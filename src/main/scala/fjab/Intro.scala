@@ -13,11 +13,14 @@ object Intro extends App {
     println(product.tail)
 
 
+    //Shapeless provides a type class called Generic that allows us to switch back and forth between a concrete ADT
+    // and its generic representati􏰀on
+    //instances of Generic have a type member Repr containing the type of its generic representation
     val iceCreamGen: Aux[IceCream, String :: Int :: Boolean :: HNil] = Generic[IceCream]
     val iceCream = IceCream("Sundae", 1, false)
 
-    val iceCreamRepr = iceCreamGen.to(iceCream)
-    val iceCream2 = iceCreamGen.from(iceCreamRepr)
+    val iceCreamRepr: String :: Int :: Boolean :: HNil = iceCreamGen.to(iceCream)
+    val iceCream2: IceCream = iceCreamGen.from(iceCreamRepr)
 
     println(iceCreamRepr)
     println(iceCream2)
@@ -54,7 +57,6 @@ object Intro extends App {
 
   //product()
   coproduct()
-
 }
 
 case class IceCream(name: String, numCherries: Int, inCone: Boolean)

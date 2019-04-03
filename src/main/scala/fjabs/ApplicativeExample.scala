@@ -24,4 +24,21 @@ object ApplicativeExample extends App {
 
   val f5: Try[List[Int]] = List(Try(1), Try{throw new IllegalArgumentException}, Try(3)).traverse(identity)
   println(f5)
+
+  val f6 = (Option(1),none[Int]).mapN(_ + _)
+  println(f6)
+
+  /*
+    what is ap?
+    We want a function that takes Option[A], Option[B] and f: (A,B) => C and returns Option[C]
+  */
+  val f: (Int, Char) => Double = (i, c) => (i + c).toDouble
+  val int: Option[Int] = Some(5)
+  val char: Option[Char] = Some('a')
+
+  val apresult = Applicative[Option].ap2(Applicative[Option].pure(f))(int, char)
+  println(apresult)
+
+  val apresult2 = f.pure[Option] ap2 (int, char)
+  println(apresult2)
 }

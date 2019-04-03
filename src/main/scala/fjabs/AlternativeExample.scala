@@ -41,4 +41,29 @@ object AlternativeExample extends App {
 
   println(decoder2.decode("10"))
 
+
+
+  val empty = Alternative[Vector].empty[Int]
+  // empty: Vector[Int] = Vector()
+
+  val pureOfFive = 5.pure[Vector]
+  // pureOfFive: Vector[Int] = Vector(5)
+
+  val concatenated: Vector[Int] = 7.pure[Vector] <+> 8.pure[Vector]
+  // concatenated: Vector[Int] = Vector(7, 8)
+
+  val double: Int => Int = _ * 2
+  // double: Int => Int = $$Lambda$14390/251393288@72315e99
+
+  val addFive: Int => Int = _ + 5
+  // addFive: Int => Int = $$Lambda$14391/1385519241@780765b3
+
+  val apForVectors = (double.pure[Vector] <+> addFive.pure[Vector]).ap(concatenated)
+  // apForVectors: Vector[Int] = Vector(14, 16, 12, 13)
+  println(apForVectors)
+
+  val apForVectorsVerbose = Alternative[Vector].ap(Alternative[Vector].combineK(Alternative[Vector].pure(double), Alternative[Vector].pure(addFive)))(concatenated)
+  println(apForVectorsVerbose)
+
+
 }

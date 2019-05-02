@@ -7,7 +7,8 @@ scalaVersion := "2.12.4"
 
 libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "3.0.3" % "test",
-  "org.typelevel" %% "cats-core" % "1.6.0"
+  "org.typelevel" %% "cats-core" % "1.6.0",
+  "org.typelevel" %% "cats-effect" % "1.2.0"
 )
 
 scalacOptions ++= Seq(
@@ -25,4 +26,5 @@ scalacOptions ++= Seq(
   "-Ywarn-value-discard" ,
   "-Ywarn-unused-import",
   "-unchecked",
-  "-Ypartial-unification")
+  "-Ypartial-unification"
+)

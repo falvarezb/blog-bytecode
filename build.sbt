@@ -8,7 +8,9 @@ scalaVersion := "2.12.4"
 libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "3.0.3" % "test",
   "org.typelevel" %% "cats-core" % "1.6.0",
-  "org.typelevel" %% "cats-effect" % "1.2.0"
+  "org.typelevel" %% "cats-effect" % "1.2.0",
+  "com.chuusai" %% "shapeless" % "2.3.3",
+  "io.estatico" %% "newtype" % "0.4.2"
 )
 
 scalacOptions ++= Seq(
@@ -26,5 +28,7 @@ scalacOptions ++= Seq(
   "-Ywarn-value-discard" ,
   "-Ywarn-unused-import",
   "-unchecked",
-  "-Ypartial-unification"
-)
+  "-Ypartial-unification",
+  "-unchecked")
+
+addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.1" cross CrossVersion.full)

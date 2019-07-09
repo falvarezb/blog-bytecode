@@ -4,21 +4,25 @@ import fjab.Hotel._
 import fjab.Price._
 import fjab.Room._
 import monocle._
+import monocle.function.Field3
 import monocle.function.all._
+import monocle.law.discipline.PrismTests
 import monocle.std.option.some
 import org.scalatest.FunSuite
+import org.typelevel.discipline.scalatest.Discipline
 import scalaz.Scalaz._
 
 import scala.util.Try
 
-class LensesTest extends FunSuite {
+class LensesTest extends FunSuite with Discipline {
 
   val rooms = List(
     Room("Double", Some("Half Board"), Price(10, "USD"), NonRefundable(1)),
     Room("Twin", None, Price(20, "USD"), Flexible(0)) ,
     Room("Executive", None, Price(200, "USD"), Flexible(0))
   )
-  val hotel = Hotel("Hotel Paradise", "100 High Street", 5, rooms)
+  val facilities = Map("business" -> List("conference room"))
+  val hotel = Hotel("Hotel Paradise", "100 High Street", 5, rooms, facilities)
 
   test("double price of even rooms") {
 
@@ -174,17 +178,65 @@ class LensesTest extends FunSuite {
     assert(updatedHotel.rooms(2).roomTariff == Flexible(newValue))
   }
 
-  test("prism definition") {
+  test("modifying business facilities") {
 
-    val prism = Prism[Int, Double]
-      {s => if(s>=0) Some(math.sqrt(s)) else None}
-      {b => (b * b) toInt}
+    val updatedHotel = (_facilities composeLens at("business") set Some(List("")))(hotel)
 
-    val x = 2
-    x match {
-      case prism(y) => println(y)
-      case other => println(other)
+    assert(updatedHotel.facilities("business") == List(""))
+  }
+
+  test("removing business facilities") {
+
+    val updatedHotel = (_facilities composeLens at("business") set None)(hotel)
+    val updatedFacilities = remove("business")(hotel.facilities)
+
+    assert(updatedHotel.facilities.get("business").isEmpty)
+    assert(updatedFacilities.get("business").isEmpty)
+  }
+
+  test("adding entertainment facilities") {
+
+    val updatedHotel = (_facilities composeLens at("entertainment") set  Some(List("satellite tv", "internet")))(hotel)
+
+    assert(updatedHotel.facilities("entertainment") == List("satellite tv", "internet"))
+  }
+
+  test("setting 1st element of tuple") {
+
+    val result = (first[(Int, Int), Int] set 1)((3,4))
+
+    assert(result == ((1,4)))
+  }
+
+  test("setting 3rd element of List") {
+
+    implicit val ev = new Field3[List[Int], Int]{
+      override def third: Lens[List[Int], Int] = Lens[List[Int], Int] (_(2))((a: Int) => (t: List[Int]) => t.take(2) ::: List(a) ::: t.drop(3))
+    }
+
+    val result = (third[List[Int], Int] set 1)(List(3,4,5))
+
+    assert(result == List(3,4,1))
+  }
+
+
+  val unlawfulPrism = Prism[Int, Double]
+    {s => Try(math.sqrt(s)).toOption}
+    {b => (b * b) toInt}
+
+  test("unlawful prism example") {
+
+    2 match {
+      case unlawfulPrism(y) => assert(y == 1.4142135623730951)
+      case _ => fail()
+    }
+
+    -2 match {
+      case unlawfulPrism(y) => assert(y.isNaN)
+      case _ => fail()
     }
   }
+
+  checkAll("prism laws fail for negative numbers", PrismTests(unlawfulPrism))
 
 }

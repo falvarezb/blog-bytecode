@@ -8,8 +8,11 @@ import monocle.function.Field3
 import monocle.function.all._
 import monocle.law.discipline.PrismTests
 import monocle.std.option.some
+import monocle.unsafe.UnsafeSelect
+import org.scalacheck.{Arbitrary, Gen}
 import org.scalatest.FunSuite
 import org.typelevel.discipline.scalatest.Discipline
+import scalaz.Equal
 import scalaz.Scalaz._
 
 import scala.util.Try
@@ -219,24 +222,54 @@ class LensesTest extends FunSuite with Discipline {
     assert(result == List(3,4,1))
   }
 
+  val unsafePrism = UnsafeSelect.unsafeSelect[Room](_.name == "Double")
+  test("double price of Double rooms using unsafe operation") {
 
-  val unlawfulPrism = Prism[Int, Double]
+    val updatedHotel = (_rooms composeTraversal each composePrism unsafePrism composeLens _price composeLens _amount modify (_ * 2)) (hotel)
+
+    assert(hotel.rooms.filter(_.name == "Double").map(_.price.amount*2) == updatedHotel.rooms.filter(_.name == "Double").map(_.price.amount))
+  }
+
+  implicit val roomEqual: Equal[Room] = Equal.equalA[Room]
+
+  val roomGen: Gen[Room] = for {
+    name <- Gen.oneOf("Double", "Twin", "Executive")
+    board <- Gen.option(Gen.alphaStr)
+    price <- for{
+      price <- Gen.posNum[Double]
+      currency <- Gen.oneOf("USD", "GBP", "EUR")
+    } yield Price(price, currency)
+    tariff <- Gen.oneOf(Gen.posNum[Double].map(NonRefundable(_)), Gen.posNum[Double].map(Flexible(_)))
+  } yield Room(name, board, price, tariff)
+
+  implicit val roomArb: Arbitrary[Room] = Arbitrary(roomGen)
+
+  implicit val arbAA: Arbitrary[Room => Room] = Arbitrary{
+    for{
+      room <- roomGen
+    } yield (_: Room) => room
+  }
+
+  checkAll("unsafe prism", PrismTests(unsafePrism))
+
+
+  val anotherUnlawfulPrism = Prism[Int, Double]
     {s => Try(math.sqrt(s)).toOption}
     {b => (b * b) toInt}
 
-  test("unlawful prism example") {
+  test("another unlawful prism example") {
 
     2 match {
-      case unlawfulPrism(y) => assert(y == 1.4142135623730951)
+      case anotherUnlawfulPrism(y) => assert(y == 1.4142135623730951)
       case _ => fail()
     }
 
     -2 match {
-      case unlawfulPrism(y) => assert(y.isNaN)
+      case anotherUnlawfulPrism(y) => assert(y.isNaN)
       case _ => fail()
     }
   }
 
-  checkAll("prism laws fail for negative numbers", PrismTests(unlawfulPrism))
+  checkAll("prism laws fail for negative numbers", PrismTests(anotherUnlawfulPrism))
 
 }

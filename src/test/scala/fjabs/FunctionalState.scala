@@ -16,7 +16,7 @@ object RNG {
 
   def simple(seed: Long): RNG = new RNG {
 
-    def nextInt = {
+    def nextInt: (Int, RNG) = {
       val seed2 = (seed*0x5DEECE66DL + 0xBL) &
         ((1L << 48) - 1)
       ((seed2 >>> 16).asInstanceOf[Int],
@@ -29,7 +29,7 @@ object RNG {
 object Functions {
 
   /**
-    * function to generate a random positive integer
+    * generates a random positive integer
     */
   def positiveInt(rng: RNG): (Int, RNG) = {
     val (i, nextRng) = rng.nextInt
@@ -37,21 +37,27 @@ object Functions {
   }
 
   /**
-    * function to generate a Double between 0 and 1, not including 1
+    * generates a Double between 0 and 1, not including 1
     */
-  def double(rng: RNG) = {
+  def double(rng: RNG): (Double, RNG) = {
     val (i, s) = positiveInt(rng)
     (i.toDouble/(Int.MaxValue+1), s)
   }
 
-  def intDouble(rng: RNG) = {
+  /**
+    * generates a random int and a random double
+    */
+  def intDouble(rng: RNG): ((Int, Double), RNG) = {
     val (i, s1) = positiveInt(rng)
     val (d, s2) = double(s1)
 
     ((i, d), s2)
   }
 
-  def double3(rng: RNG) = {
+  /**
+    * generates 3 random doubles
+    */
+  def double3(rng: RNG): ((Double, Double, Double), RNG) = {
     val (d1, s1) = double(rng)
     val (d2, s2) = double(s1)
     val (d3, s3) = double(s2)
@@ -59,8 +65,11 @@ object Functions {
     ((d1, d2, d3), s3)
   }
 
-  def ints(count: Int)(rng: RNG): (List[Int], RNG) = {
-    (1 to count).foldLeft((List.empty[Int], rng))((acc, _) => {
+  /**
+    * generates a list of n random ints
+    */
+  def ints(n: Int)(rng: RNG): (List[Int], RNG) = {
+    (1 to n).foldLeft((List.empty[Int], rng))((acc, _) => {
       val (l, currentRng) = acc
       val (a, nextRng) = currentRng.nextInt
       (a :: l, nextRng)
@@ -68,22 +77,46 @@ object Functions {
   }
 
 
+  /*
+    All the above methods are functions of the type RNG => (A, RNG)
+    Functions of this type describe 'state actions' that transform RNG states
+    We are going to rewrite them in terms of that type
+   */
+
+  //For convenience, we create an alias to represent that type
   type Rand[+A] = RNG => (A, RNG)
 
+  /**
+    * We want to start writing combinators that let us avoid explicitly passing along the RNG state.
+    * This will become a kind of domain-specific language that does all of this passing for us.
+    */
   val int: Rand[Int] = _.nextInt
 
-  def unit[A](a: A): Rand[A] = rng => (a, rng)
+  /**
+    * A simple RNG-transition is the unit action, which passes the RNG state through without using it,
+    * always returning a constant value rather than a random value.
+    */
+  def unit[A](a: A): Rand[A] = (a, _)
 
+  /**
+    * transforms the output of a state action without modifying the state itself
+    */
   def map[A,B](s: Rand[A])(f: A => B): Rand[B] = rng => {
       val (a, nextRng) = s(rng)
       (f(a), nextRng)
     }
 
 
-  def positiveMax(n: Int): Rand[Int] = map(positiveInt)(_ % n)
+  /**
+    * generates an Int between 0 and n, inclusive
+    */
+  def positiveMax(n: Int): Rand[Int] = map(positiveInt)(_ % (n+1))
 
   def _double: Rand[Double] = map(positiveInt)(_.toDouble/(Int.MaxValue+1))
 
+  /**
+    * combines two RNG actions into one
+    */
   def map2[A,B,C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] = rng => {
       val (a, rng2) = ra(rng)
       val (b, rng3) = rb(rng2)
@@ -91,14 +124,16 @@ object Functions {
       (f(a,b), rng3)
     }
 
-
   def _intDouble: Rand[(Int, Double)] = map2(positiveInt, double)((_,_))
 
-  def sequence[A](fs: List[Rand[A]]): Rand[List[A]] = fs.foldLeft(unit(List.empty[A]))((acc, f) => map2(f,acc)(_ :: _))
+  /**
+    * combines a List of transitions into a single transition
+    */
+  def sequence[A](fs: List[Rand[A]]): Rand[List[A]] = fs.foldRight(unit(List.empty[A]))((f, acc) => map2(f,acc)(_ :: _))
 
-  def traverse[A,B](fs: List[Rand[A]])(g: A => B): Rand[List[B]] = fs.foldLeft(unit(List.empty[B]))((acc, f) => map2(f,acc)(g(_) :: _))
+  def traverse[A,B](fs: List[Rand[A]])(g: A => B): Rand[List[B]] = fs.foldRight(unit(List.empty[B]))((f, acc) => map2(f,acc)(g(_) :: _))
 
-  def _ints(count: Int): Rand[List[Int]] = sequence(List.fill(count)(int))
+  def _ints(n: Int): Rand[List[Int]] = sequence(List.fill(n)(int))
 
   def flatMap[A,B](f: Rand[A])(g: A => Rand[B]): Rand[B] = rng => {
     val (a, nextRng) = f(rng)
@@ -107,13 +142,17 @@ object Functions {
 
   def _positiveInt: Rand[Int] = flatMap(int)(i => rng => if(i == Int.MinValue) int(rng) else (i, rng))
 
+  //the combinators map and map2 can be rewritten in terms of flatMap
   def _map[A,B](s: Rand[A])(f: A => B): Rand[B] = flatMap(s)(a => unit(f(a)))
 
   def _map2[A,B,C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] = flatMap(ra)(a => map(rb)(b => f(a,b)))
 
+
+  //The above combinators are not specific to RNG, so the can be generalised to any State
+
   type State[S,+A] = S => (A,S)
 
-  def sunit[S,A](a: A): State[S,A] = s => (a, s)
+  def sunit[S,A](a: A): State[S,A] = (a, _)
 
   def sflatMap[S,A,B](f: State[S,A])(g: A => State[S,B]): State[S,B] = r => {
     val (a, nextR) = f(r)
@@ -128,7 +167,7 @@ object Functions {
 
 case class State[S,+A](run: S => (A,S)) {
 
-  def unit[A](a: A): State[S,A] = State(s => (a,s))
+  def unit[A](a: A): State[S,A] = State((a,_))
 
   def map[A,B](s: State[S,A])(f: A => B): State[S, B] = State(rng => {
     val (a, nextRng) = s.run(rng)

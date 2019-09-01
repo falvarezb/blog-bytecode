@@ -1,38 +1,31 @@
 package fjabs
 
+import fjabs.Branch.branch
+import fjabs.FoldableAPI._
+
 sealed abstract class Tree[A]
 final case class Leaf[A](value: A) extends Tree[A]
 final case class Branch[A](value: A, left: Tree[A], right: Tree[A]) extends Tree[A]
 object Branch {
+  //smart constructor: upcast Branch to Tree
   def branch[A](value: A, left: Tree[A], right: Tree[A]): Tree[A] = Branch(value, left, right)
 }
 
-//FoldLeft represents a type that can be folded
+//FoldLeft represents a type that can be folded from left to right
 trait FoldLeft[F[_]] {
   def foldLeft[A, B](xs: F[A], b: B, f: (B, A) => B): B
 }
 
+//FoldLeft represents a type that can be folded without any specific order
 trait Fold[F[_]] {
-//  def foldLeft[A](xs: F[A], b: A, f: (A, A) => A): A
-//  def foldRight[A](xs: F[A], b: A, f: (A, A) => A): A
   def fold[A](xs: F[A], b: A, f: (A, A) => A): A
 }
 
-object Fold{
+object Fold {
 
   def apply[F[_]: Fold]: Fold[F] = implicitly[Fold[F]]
 
   implicit val foldTree: Fold[Tree] = new Fold[Tree] {
-//    override def foldLeft[A](xs: Tree[A], b: A, f: (A, A) => A): A = xs match {
-//      case Leaf(v) => f(b,v)
-//      case Branch(v,l,r) => foldLeft(r, f(b,v), f)
-//    }
-//
-//    override def foldRight[A](xs: Tree[A], b: A, f: (A, A) => A): A = xs match {
-//      case Leaf(v) => f(b,v)
-//      case Branch(v,l,r) => foldRight(l, f(v,b), f)
-//    }
-
     override def fold[A](xs: Tree[A], b: A, f: (A, A) => A): A = xs match {
       case Leaf(v) => f(b,v)
       case Branch(v,l,r) => f(f(fold(l,b,f), v),fold(r,b,f))
@@ -40,7 +33,7 @@ object Fold{
   }
 }
 
-object FoldLeft{
+object FoldLeft {
 
   def apply[F[_]: FoldLeft]: FoldLeft[F] = implicitly[FoldLeft[F]]
 
@@ -56,65 +49,42 @@ object FoldLeft{
   }
 }
 
-object Foldable extends App {
+object FoldableAPI {
 
-  import Branch._
-
-  //Sum over the elements of a type as long as it is foldable and there is a Monoid for its elements
-  def sum[F[_]: FoldLeft, A: Monoid](xs: F[A]): A = {
-    FoldLeft[F].foldLeft[A,A](xs, Monoid[A].empty, Monoid[A].combine)
+  def sum[F[_]: FoldLeft](xs: F[Int]): Int = {
+    FoldLeft[F].foldLeft[Int, Int](xs, 0, (acc, x) => acc + x)
   }
 
-  def sum2[F[_]: Fold, A: Monoid](xs: F[A]): A = {
-    Fold[F].fold[A](xs, Monoid[A].empty, Monoid[A].combine)
+  def concatenate[F[_]: FoldLeft](xs: F[String]): String = {
+    FoldLeft[F].foldLeft[String, String](xs, "", (acc, x) => acc + x)
   }
+
+  def concatenate2[F[_]: Fold](xs: F[String]): String = {
+    Fold[F].fold[String](xs, "", (acc, x) => acc + x)
+  }
+}
+
+object Main extends App {
 
   println(sum(List(1,2,3,4)))
-  println(sum(List("1","2","3")))
-  println(sum(List(1,2,3,4))(FoldLeft.foldLeftList, Monoid.multiplicativeMonoid))
-
-  //val tree: Tree[Int] = Branch(1, Branch(1, Leaf(2), Leaf(3)), Leaf(8))
-  //println(FoldLeft.foldLefTree.foldLeft(tree, 0, (x: Int, y: Int) => x+y))
-
   println(sum(branch(1, Branch(1, Leaf(2), Leaf(3)), Leaf(8))))
-  println(sum(branch("1", Branch("2", Leaf("3"), Leaf("4")), Branch("5", Leaf("6"), Leaf("7")))))
-  //println(sum(empty[Int]))
+  println(concatenate(branch("1", Branch("1", Leaf("2"), Leaf("3")), Leaf("8"))))
+  println(concatenate2(branch("1", Branch("1", Leaf("2"), Leaf("3")), Leaf("8"))))
+}
 
-  println(sum2(branch(1, Branch(1, Leaf(2), Leaf(3)), Leaf(8))))
-  println(sum2(branch("1", Branch("2", Leaf("3"), Leaf("4")), Branch("5", Leaf("6"), Leaf("7")))))
-  //println(sum2(empty[Int]))
+object CatsFoldable extends App {
 
-  val xs = List(1,2,3)
-  println(xs.reduceLeft((acc,x) => acc + x))
-  println(xs.reduceLeft((acc,x) => acc - x))
-  println(xs.reduceRight((x, acc) => x - acc))
-  println(xs.reduce((x, y) => x - y))
+  import cats._
+  import cats.implicits._
 
-  println("")
-  println(xs.foldLeft(0)((acc,x) => acc - x))
-  println(xs.foldRight(0)((x, acc) => x - acc))
-  println(xs.fold(0)((x, y) => x - y))
-
-  println("")
-
-  def sumLoop(xs: List[Int]): Int = {
-    var acc = 0
-    for(x <- xs){
-      acc += x
+  implicit val foldableTree = new Foldable[Tree] {
+    override def foldLeft[A, B](fa: Tree[A], b: B)(f: (B, A) => B): B = fa match {
+      case Leaf(v) => f(b,v)
+      case Branch(v,l,r) => foldLeft(r, foldLeft(l, f(b,v))(f))(f)
     }
-    acc
+
+    override def foldRight[A, B](fa: Tree[A], lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] = ???
   }
 
-
-  def sumRecursive(xs: List[Int]): Int = xs match {
-    case Nil => 0
-    case x :: tail => x + sumRecursive(tail)
-  }
-
-
-  def sumFold(xs: List[Int]): Int = xs.reduce((acc, x) => acc + x)
-
-  println(sumLoop(xs))
-  println(sumRecursive(xs))
-  println(sumFold(xs))
+  println(Foldable[Tree].fold(branch("1", Branch("1", Leaf("2"), Leaf("3")), Leaf("8"))))
 }

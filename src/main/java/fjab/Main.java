@@ -1,15 +1,16 @@
 package fjab;
 
 import java.io.IOException;
+import java.nio.file.Paths;
 
-import static fjab.Poset.printPoset;
-import static fjab.Poset.readConfiguration;
+import static fjab.Poset.*;
 
 public class Main {
 
-  public static void main(String[] args) throws IOException {
+  public static void main(String[] args) throws IOException, PosetException {
 
-    printPoset(readConfiguration("src/main/resources/poset1.txt"));
+    Poset poset = buildPosetFromFile(Paths.get("src/main/resources/poset1.txt"));
+    System.out.println(poset.toString());
 
   }
 

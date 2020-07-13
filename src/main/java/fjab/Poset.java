@@ -11,11 +11,11 @@ import static java.util.stream.Collectors.toList;
 
 public class Poset {
 
-  private int[][] poset;
+  private final int[][] poset;
 
   private Poset(int[][] poset){
     this.poset = poset;
-  };
+  }
 
   public int[][] getArrayRepresentation() {
     return Arrays.copyOf(poset, poset.length);
@@ -33,7 +33,7 @@ public class Poset {
    * 0 0 1 0
    * 1 1 0 1
    *
-   * Because of the reflexitivity law, all elements in the main diagonal must be 1.
+   * Because of the reflexivity law, all elements in the main diagonal must be 1.
    * Because of the antysimmetry law, elements in symmetric positions cannot be both 1.
    *
    * The representation does not need to comply with the transitivity law as this method will try to apply it to
@@ -66,10 +66,10 @@ public class Poset {
     return new Poset(finalArray);
   }
 
-  static void checkPosetLaws(int[][] poset) throws PosetException {
+  private static void checkPosetLaws(int[][] poset) throws PosetException {
     for(int i=0; i<poset.length; i++){
       if(poset[i][i] != 1) {
-        throw new ReflexitivityException();
+        throw new ReflexivityException();
       }
       for(int j=i+1; j<poset[i].length; j++){
         if(poset[i][j]==1 && poset[j][i]==1) {
@@ -98,12 +98,14 @@ public class Poset {
    * - the observed subject is the considered row
    * - the observers or subscribers are the other rows that point to it
    *
+   * This method is the inverse of a transitive reduction (https://en.wikipedia.org/wiki/Transitive_reduction)
+   *
    *
    * @param poset
    * @return
    * @throws TransitivityException
    */
-  static int[][] applyTransitiveRule(int[][] poset) throws TransitivityException {
+  private static int[][] applyTransitiveRule(int[][] poset) throws TransitivityException {
     //initialisation
     Row[] rows = new Row[poset.length];
     for (int i=0; i<poset.length; i++){
@@ -138,14 +140,41 @@ public class Poset {
     return poset;
   }
 
+
+  /**
+   * Topological sort (https://en.wikipedia.org/wiki/Topological_sorting)
+   * @return Array of labels sorted
+   */
+  public int[] sort() {
+    //initialisation
+    LabelledRow[] rows = new LabelledRow[poset.length];
+    for (int i=0; i<poset.length; i++){
+      rows[i] = new LabelledRow(poset[i], i);
+    }
+
+    Arrays.sort(rows, (o1, o2) -> o2.numberOfBinaryRelations - o1.numberOfBinaryRelations);
+
+    return Arrays.stream(rows).mapToInt(row -> row.label).toArray();
+  }
+
+  static class LabelledRow {
+    private final int label;
+    private final int numberOfBinaryRelations;
+
+    LabelledRow(int[] row, int label){
+      this.label = label;
+      this.numberOfBinaryRelations = Arrays.stream(row).filter(elem -> elem == 1).toArray().length;
+    }
+  }
+
   static class Row {
 
     Row(int[] row){
       this.row = row;
     }
 
-    private int[] row;
-    private List<Row> subscribers = new ArrayList<>();
+    private final int[] row;
+    private final List<Row> subscribers = new ArrayList<>();
 
     void registerSubscriber(Row subscriber) {
       subscribers.add(subscriber);
@@ -155,6 +184,9 @@ public class Poset {
       subscribers.forEach(s -> s.update(this));
     }
 
+    /**
+     * bitwise OR between this.row and otherRow.row
+     */
     void update(Row otherRow){
       boolean updated = false;
       for(int j=0; j<otherRow.row.length; j++){

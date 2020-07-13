@@ -27,7 +27,7 @@ public class PosetTest {
     buildPosetFromFile(Paths.get("src/test/resources/poset_antisymmetry_rule_after_transitive_rule.txt"));
   }
 
-  @Test(expected = ReflexitivityException.class)
+  @Test(expected = ReflexivityException.class)
   public void buildPoset_reflexitivity_rule_violation() throws IOException, PosetException {
     buildPosetFromFile(Paths.get("src/test/resources/poset_reflexitivity_rule.txt"));
   }
@@ -35,6 +35,12 @@ public class PosetTest {
   @Test(expected = IllegalArgumentException.class)
   public void buildPoset_illegal_element() throws IOException, PosetException {
     buildPosetFromFile(Paths.get("src/test/resources/poset_illegal_element.txt"));
+  }
+
+  @Test
+  public void sort() throws IOException, PosetException {
+    int[] labels = buildPosetFromFile(Paths.get("src/test/resources/poset_success.txt")).sort();
+    assertArrayEquals(labels, new int[]{3,0,1,2});
   }
 
 }

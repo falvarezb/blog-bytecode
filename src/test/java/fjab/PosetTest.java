@@ -12,9 +12,29 @@ import static org.junit.Assert.assertArrayEquals;
 public class PosetTest {
 
   @Test
-  public void buildPoset_success() throws IOException, PosetException {
-    Poset poset = buildPosetFromFile(Paths.get("src/test/resources/poset_success.txt"));
-    assertArrayEquals(poset.getArrayRepresentation(), new int[][]{{1,1,1,0},{0,1,1,0},{0,0,1,0},{1,1,1,1}});
+  public void buildPoset_success_1() throws IOException, PosetException {
+    Poset poset = buildPosetFromFile(Paths.get("src/test/resources/poset_success_1.txt"));
+    assertArrayEquals(poset.getArrayRepresentation(), new int[][]{
+      {1,1,1,0},
+      {0,1,1,0},
+      {0,0,1,0},
+      {1,1,1,1}
+    });
+  }
+
+  @Test
+  public void buildPoset_success_2() throws IOException, PosetException {
+    Poset poset = buildPosetFromFile(Paths.get("src/test/resources/poset_success_2.txt"));
+    assertArrayEquals(poset.getArrayRepresentation(), new int[][]{
+      {1,0,0,1,0,1,1,1},
+      {0,1,0,1,1,1,1,1},
+      {0,0,1,0,1,0,1,1},
+      {0,0,0,1,0,1,1,1},
+      {0,0,0,0,1,0,1,0},
+      {0,0,0,0,0,1,0,0},
+      {0,0,0,0,0,0,1,0},
+      {0,0,0,0,0,0,0,1}
+    });
   }
 
   @Test(expected = AntiSymmetryException.class)
@@ -38,9 +58,15 @@ public class PosetTest {
   }
 
   @Test
-  public void sort() throws IOException, PosetException {
-    int[] labels = buildPosetFromFile(Paths.get("src/test/resources/poset_success.txt")).sort();
+  public void sort1() throws IOException, PosetException {
+    int[] labels = buildPosetFromFile(Paths.get("src/test/resources/poset_success_1.txt")).sort();
     assertArrayEquals(labels, new int[]{3,0,1,2});
+  }
+
+  @Test
+  public void sort2() throws IOException, PosetException {
+    int[] labels = buildPosetFromFile(Paths.get("src/test/resources/poset_success_2.txt")).sort();
+    assertArrayEquals(labels, new int[]{1,0,2,3,4,5,6,7});
   }
 
 }

@@ -22,7 +22,7 @@ public class Poset {
   }
 
   /**
-   * Build a Poset based on the content of the given file
+   * Build a Poset based on the representation stored in the given file
    * The binary relation ≤ between the different pairs of elements is represented in a matrix where
    * 1 indicates that the elements are related to each other
    *
@@ -31,13 +31,15 @@ public class Poset {
    * 1 1 0 0
    * 0 1 1 0
    * 0 0 1 0
-   * 1 1 0 1
+   * 1 0 0 1
    *
    * Because of the reflexivity law, all elements in the main diagonal must be 1.
    * Because of the antysimmetry law, elements in symmetric positions cannot be both 1.
    *
-   * The representation does not need to comply with the transitivity law as this method will try to apply it to
-   * generate the final version of the Poset. For instance, after applying the transitivity law, the final result is
+   * If a transitive reduction (https://en.wikipedia.org/wiki/Transitive_reduction) is provided, the transitivity law
+   * will be applied in order to generate the final version of the Poset.
+   *
+   * For instance, after applying the transitivity law to the previous example, the final result is
    *
    * 1 1 1 0
    * 0 1 1 0
@@ -59,7 +61,7 @@ public class Poset {
     try {
       lines.stream().map(line -> Arrays.stream(line.split(" ")).mapToInt(Integer::parseInt).toArray()).collect(toList()).toArray(array);
     } catch (NumberFormatException e) {
-      throw new IllegalArgumentException("The Poset representation must contain numbers only");
+      throw new IllegalArgumentException("The Poset representation must contain the numbers 1 and 0 only");
     }
     checkPosetLaws(array);
     int[][] finalArray = applyTransitiveRule(array);
@@ -143,7 +145,7 @@ public class Poset {
 
   /**
    * Topological sort (https://en.wikipedia.org/wiki/Topological_sorting)
-   * @return Array of labels sorted
+   * @return Array of sorted labels
    */
   public int[] sort() {
     //initialisation
@@ -157,6 +159,9 @@ public class Poset {
     return Arrays.stream(rows).mapToInt(row -> row.label).toArray();
   }
 
+  /**
+   * Auxiliar object to do the topological sort of the poset
+   */
   static class LabelledRow {
     private final int label;
     private final int numberOfBinaryRelations;

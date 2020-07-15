@@ -4,12 +4,13 @@ import java.io.IOException;
 import java.nio.file.Paths;
 
 import static fjab.Poset.*;
+import static fjab.TransitivityMode.TRANSITIVE_EXPANSION;
 
 public class Main {
 
   public static void main(String[] args) throws IOException, PosetException {
 
-    Poset poset = buildPosetFromFile(Paths.get("src/main/resources/poset1.txt"));
+    Poset poset = buildPosetFromFile(Paths.get("src/main/resources/poset1.txt"), TRANSITIVE_EXPANSION);
     System.out.println(poset.toString());
 
   }

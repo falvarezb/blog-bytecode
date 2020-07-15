@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static fjab.TransitivityMode.TRANSITIVE_EXPANSION;
+import static fjab.TransitivityMode.TRANSITIVE_REDUCTION;
 import static java.util.stream.Collectors.toList;
 
 public class Poset {
@@ -54,7 +56,7 @@ public class Poset {
    * @throws IllegalArgumentException If chars other than numbers are used
    * @throws PosetException If any of the Poset laws is violated
    */
-  public static Poset buildPosetFromFile(Path file) throws IOException, IllegalArgumentException, PosetException {
+  public static Poset buildPosetFromFile(Path file, TransitivityMode transitivityMode) throws IOException, IllegalArgumentException, PosetException {
 
     List<String> lines = Files.readAllLines(file);
     int[][] array = new int[lines.size()][lines.size()];
@@ -64,8 +66,16 @@ public class Poset {
       throw new IllegalArgumentException("The Poset representation must contain the numbers 1 and 0 only");
     }
     checkPosetLaws(array);
-    int[][] finalArray = applyTransitiveRule(array);
-    return new Poset(finalArray);
+    if(transitivityMode == TRANSITIVE_EXPANSION){
+      return new Poset(transitiveExpansion(array));
+    }
+    else if (transitivityMode == TRANSITIVE_REDUCTION){
+      return new Poset(transitiveReduction(array));
+    }
+    else {
+      return new Poset(array);
+    }
+
   }
 
   private static void checkPosetLaws(int[][] poset) throws PosetException {
@@ -93,6 +103,22 @@ public class Poset {
     return sb.toString();
   }
 
+  private static int[][] transitiveReduction(int[][] originalPoset)  {
+    int[][] poset = Arrays.copyOf(originalPoset, originalPoset.length);
+    for(int i=0; i<poset.length; i++){
+      for(int j=0; j<poset[i].length; j++){
+        if(i != j && poset[i][j] == 1){
+          for(int k=j+1; k<poset[j].length; k++){
+            if(poset[j][k] == 1){
+              poset[i][k] = 0;
+            }
+          }
+        }
+      }
+    }
+    return poset;
+  }
+
   /**
    * Applying the transitivity law is equivalent to doing a bitwise OR between a row and the rows it points to
    * Every time a row is updated, all the rows pointing to it must be updated and so on.
@@ -107,7 +133,8 @@ public class Poset {
    * @return
    * @throws TransitivityException
    */
-  private static int[][] applyTransitiveRule(int[][] poset) throws TransitivityException {
+  private static int[][] transitiveExpansion(int[][] originalPoset) throws TransitivityException {
+    int[][] poset = Arrays.copyOf(originalPoset, originalPoset.length);
     //initialisation
     Row[] rows = new Row[poset.length];
     for (int i=0; i<poset.length; i++){
@@ -145,9 +172,11 @@ public class Poset {
 
   /**
    * Topological sort (https://en.wikipedia.org/wiki/Topological_sorting)
+   * Each element of the poset is labelled by its position in the matrix representation
    * @return Array of sorted labels
    */
   public int[] sort() {
+    //TODO: sort requires TRANSITIVE_EXPANSION
     //initialisation
     LabelledRow[] rows = new LabelledRow[poset.length];
     for (int i=0; i<poset.length; i++){

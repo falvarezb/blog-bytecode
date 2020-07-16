@@ -13,14 +13,28 @@ import static java.util.stream.Collectors.toList;
 
 public class Poset {
 
-  private final int[][] poset;
+  private final int[][] array;
+  private final int numberOfBinaryRelations;
+  private final TransitivityMode transitivityMode;
 
-  private Poset(int[][] poset){
-    this.poset = poset;
+  public Poset(int[][] array) throws PosetException {
+    this(arrayDeepCopy(array), TRANSITIVE_EXPANSION);
+  }
+
+  private Poset(int[][] array, TransitivityMode transitivityMode) throws PosetException {
+    if(transitivityMode == TRANSITIVE_EXPANSION) {
+      checkReflexivityAndAntiSymmetryLaws(array);
+      this.array = transitiveExpansion(array);
+    }
+    else {
+      this.array = array;
+    }
+    this.numberOfBinaryRelations = (int) Arrays.stream(this.array).flatMapToInt(j -> Arrays.stream(j).filter(i -> i == 1)).count();
+    this.transitivityMode = transitivityMode;
   }
 
   public int[][] getArrayRepresentation() {
-    return Arrays.copyOf(poset, poset.length);
+    return arrayDeepCopy(array);
   }
 
   /**
@@ -56,7 +70,7 @@ public class Poset {
    * @throws IllegalArgumentException If chars other than numbers are used
    * @throws PosetException If any of the Poset laws is violated
    */
-  public static Poset buildPosetFromFile(Path file, TransitivityMode transitivityMode) throws IOException, IllegalArgumentException, PosetException {
+  public static Poset buildPosetFromFile(Path file) throws IOException, IllegalArgumentException, PosetException {
 
     List<String> lines = Files.readAllLines(file);
     int[][] array = new int[lines.size()][lines.size()];
@@ -65,20 +79,11 @@ public class Poset {
     } catch (NumberFormatException e) {
       throw new IllegalArgumentException("The Poset representation must contain the numbers 1 and 0 only");
     }
-    checkPosetLaws(array);
-    if(transitivityMode == TRANSITIVE_EXPANSION){
-      return new Poset(transitiveExpansion(array));
-    }
-    else if (transitivityMode == TRANSITIVE_REDUCTION){
-      return new Poset(transitiveReduction(array));
-    }
-    else {
-      return new Poset(array);
-    }
+    return new Poset(array, TRANSITIVE_EXPANSION);
 
   }
 
-  private static void checkPosetLaws(int[][] poset) throws PosetException {
+  private static void checkReflexivityAndAntiSymmetryLaws(int[][] poset) throws PosetException {
     for(int i=0; i<poset.length; i++){
       if(poset[i][i] != 1) {
         throw new ReflexivityException();
@@ -94,7 +99,7 @@ public class Poset {
 
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    for (int[] ints : poset) {
+    for (int[] ints : array) {
       for (int anInt : ints) {
         sb.append(" ").append(anInt);
       }
@@ -103,20 +108,20 @@ public class Poset {
     return sb.toString();
   }
 
-  private static int[][] transitiveReduction(int[][] originalPoset)  {
-    int[][] poset = Arrays.copyOf(originalPoset, originalPoset.length);
-    for(int i=0; i<poset.length; i++){
-      for(int j=0; j<poset[i].length; j++){
-        if(i != j && poset[i][j] == 1){
-          for(int k=j+1; k<poset[j].length; k++){
-            if(poset[j][k] == 1){
-              poset[i][k] = 0;
+  public Poset transitiveReduction() throws PosetException {
+    int[][] newArray = arrayDeepCopy(array);
+    for(int i=0; i<array.length; i++){
+      for(int j=0; j<array[i].length; j++){
+        if(i != j && array[i][j] == 1){
+          for(int k=j+1; k<array[j].length; k++){
+            if(array[j][k] == 1){
+              newArray[i][k] = 0;
             }
           }
         }
       }
     }
-    return poset;
+    return new Poset(newArray, TRANSITIVE_REDUCTION);
   }
 
   /**
@@ -133,18 +138,18 @@ public class Poset {
    * @return
    * @throws TransitivityException
    */
-  private static int[][] transitiveExpansion(int[][] originalPoset) throws TransitivityException {
-    int[][] poset = Arrays.copyOf(originalPoset, originalPoset.length);
+  private int[][] transitiveExpansion(int[][] array) throws PosetException {
+    int[][] newArray = arrayDeepCopy(array);
     //initialisation
-    Row[] rows = new Row[poset.length];
-    for (int i=0; i<poset.length; i++){
-      rows[i] = new Row(poset[i]);
+    Row[] rows = new Row[newArray.length];
+    for (int i=0; i<newArray.length; i++){
+      rows[i] = new Row(newArray[i]);
     }
 
     //register subscribers
-    for (int i=0; i<poset.length; i++){
-      for(int j=0; j<poset[i].length; j++){
-        if(poset[i][j]==1 && i != j){
+    for (int i=0; i<newArray.length; i++){
+      for(int j=0; j<newArray[i].length; j++){
+        if(newArray[i][j]==1 && i != j){
           rows[j].registerSubscriber(rows[i]);
         }
       }
@@ -157,16 +162,17 @@ public class Poset {
 
     //re-build poset
     for (int i=0; i<rows.length; i++){
-      poset[i] = rows[i].row;
+      newArray[i] = rows[i].row;
     }
 
     //check that antisymmetry law is not violated
     try {
-      checkPosetLaws(poset);
+      checkReflexivityAndAntiSymmetryLaws(newArray);
     } catch (PosetException e) {
       throw new TransitivityException();
     }
-    return poset;
+
+    return newArray;
   }
 
 
@@ -176,11 +182,13 @@ public class Poset {
    * @return Array of sorted labels
    */
   public int[] sort() {
-    //TODO: sort requires TRANSITIVE_EXPANSION
+    if(this.transitivityMode != TRANSITIVE_EXPANSION){
+      throw new UnsupportedOperationException();
+    }
     //initialisation
-    LabelledRow[] rows = new LabelledRow[poset.length];
-    for (int i=0; i<poset.length; i++){
-      rows[i] = new LabelledRow(poset[i], i);
+    LabelledRow[] rows = new LabelledRow[array.length];
+    for (int i = 0; i< array.length; i++){
+      rows[i] = new LabelledRow(array[i], i);
     }
 
     Arrays.sort(rows, (o1, o2) -> o2.numberOfBinaryRelations - o1.numberOfBinaryRelations);
@@ -233,5 +241,13 @@ public class Poset {
         this.notifySubscribers();
       }
     }
+  }
+
+  private static int[][] arrayDeepCopy(int[][] array) {
+    int[][] newArray = new int[array.length][];
+    for(int j=0; j<array.length; j++){
+      newArray[j] = Arrays.copyOf(array[j], array[j].length);
+    }
+    return newArray;
   }
 }

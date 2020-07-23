@@ -12,7 +12,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.Random;
 import java.util.stream.Stream;
 
@@ -189,17 +188,29 @@ public class PosetTest {
   static Stream<Arguments> sortSupplier() {
     return Stream.of(
       arguments("src/test/resources/poset_success_1.txt", new int[]{3,0,1,2}),
-      arguments("src/test/resources/poset_success_2.txt", new int[]{1,0,2,3,4,5,6,7})
+      arguments("src/test/resources/poset_success_2.txt", new int[]{1,0,2,3,4,5,6,7}),
+      arguments("src/test/resources/poset_success_3.txt", new int[]{4,3,2,1,0})
     );
   }
 
+
+  //===================================================//
+  //============== PROPERTY-BASED TESTS ===============//
+  //===================================================//
+
   @Property
+  /*
+   * TE(TR(TE(arr))) == TE(arr)
+   */
   void transitiveExpansionAndReductionAreInverseOfEachOther(@ForAll("posetGenerator") Poset poset) {
     assertArrayEquals(new Poset(poset.transitiveReduction().getArrayRepresentation()).getArrayRepresentation(), poset.getArrayRepresentation());
     Statistics.collect(poset.getArrayRepresentation().length);
   }
 
   @Property
+  /*
+   * Num(TR(TE(arr))) <= Num(TE(arr))
+   */
   void numberOfBinaryRelationsOfTransitiveReductionIsEqualOrLessThanTransitiveExpansion(@ForAll("posetGenerator") Poset poset) {
     assertTrue(poset.transitiveReduction().getNumberOfBinaryRelations() <= poset.getNumberOfBinaryRelations());
     Statistics.collect(poset.getArrayRepresentation().length);
@@ -214,7 +225,7 @@ public class PosetTest {
           transitiveReductionArray[i][j] = 0;
           try{
             Poset newPoset = new Poset(transitiveReductionArray);
-            if(Arrays.deepEquals(newPoset.getArrayRepresentation(), poset.getArrayRepresentation())){
+            if(newPoset.equals(poset)){
               return false;
             }
             transitiveReductionArray[i][j] = 1;
@@ -245,7 +256,9 @@ public class PosetTest {
       } catch (PosetException e) {
           return new Poset(new int[][]{{1}});
       }
-    }).filter(poset -> poset.getArrayRepresentation().length > 1));
+    })
+      //Discard invalid posets
+      .filter(poset -> poset.getArrayRepresentation().length > 1));
 
   }
 }

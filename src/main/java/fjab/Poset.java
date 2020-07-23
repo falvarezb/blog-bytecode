@@ -67,6 +67,19 @@ import static java.util.stream.Collectors.toList;
  */
 public class Poset {
 
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    Poset poset = (Poset) o;
+    return Arrays.deepEquals(array, poset.array);
+  }
+
+  @Override
+  public int hashCode() {
+    return Arrays.deepHashCode(array);
+  }
+
   private final int[][] array;
   private final int numberOfBinaryRelations;
   private final TransitivityMode transitivityMode;

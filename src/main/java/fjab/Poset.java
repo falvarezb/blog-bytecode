@@ -33,7 +33,7 @@ import static java.util.stream.Collectors.toList;
  *
  * Because of the:
  * - reflexivity property, all elements in the main diagonal must be 1.
- * - antysimmetry property, elements in symmetric positions cannot be both 1.
+ * - antisymmetry property, elements in symmetric positions cannot be both 1.
  *
  * The above example is the so-called transitive reduction (https://en.wikipedia.org/wiki/Transitive_reduction), a
  * simplified version of the Poset without the transitive relations.

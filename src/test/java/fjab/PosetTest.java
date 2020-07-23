@@ -62,7 +62,7 @@ public class PosetTest {
 
     @Test
     @DisplayName("violation of reflexivity rule")
-    public void testReflexitivityRuleViolation() {
+    public void testReflexivityRuleViolation() {
       assertThrows(ReflexivityException.class, () -> buildPosetFromFile(Paths.get("src/test/resources/poset_reflexivity_rule.txt")));
     }
   }
@@ -219,7 +219,7 @@ public class PosetTest {
             }
             transitiveReductionArray[i][j] = 1;
           }
-          catch (PosetException e){}
+          catch (PosetException ignored){}
         }
       }
     }
@@ -230,9 +230,10 @@ public class PosetTest {
   @Provide
   Arbitrary<Poset> posetGenerator() throws PosetException{
     Random random = new Random();
-    return Arbitraries.integers().between(1,1000).flatMap(numRepetitions -> Arbitraries.integers().between(5,10).map(size -> {
+    return Arbitraries.integers().between(1,1000).flatMap(numRepetitions -> Arbitraries.integers().between(5, 10).map(size -> {
       int[][] poset = new int[size][size];
       for(int i=0; i<size; i++) {
+        //noinspection ConstantConditions
         poset[i][i] = 1;
         for(int j=i+1; j<size; j++) {
           poset[i][j] = random.nextBoolean() ? 1 : 0;

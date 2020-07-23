@@ -11,6 +11,60 @@ import static fjab.TransitivityMode.TRANSITIVE_EXPANSION;
 import static fjab.TransitivityMode.TRANSITIVE_REDUCTION;
 import static java.util.stream.Collectors.toList;
 
+/**
+ * A Poset (https://en.wikipedia.org/wiki/Partially_ordered_set) is a set of elements with a binary relation
+ * defined between them (not necessarily between all of them) that must satisfy the laws of
+ * - reflexivity
+ * - antisymmetry
+ * - transitivity
+ *
+ * A binary relation with these properties is called "partial order" and is denoted by ≤.
+ *
+ * The Poset can be represented as a matrix containing 1s and 0s.
+ *
+ * For instance, given a set of 4 elements [a,b,c,d], here's an example of a binary relation between them:
+ *
+ * 1 1 0 0
+ * 0 1 1 0
+ * 0 0 1 0
+ * 1 0 0 1
+ *
+ * The element [0][1] is 1, meaning that the element 0 is related to the element 1, in other words, a ≤ b
+ *
+ * Because of the:
+ * - reflexivity property, all elements in the main diagonal must be 1.
+ * - antysimmetry property, elements in symmetric positions cannot be both 1.
+ *
+ * The above example is the so-called transitive reduction (https://en.wikipedia.org/wiki/Transitive_reduction), a
+ * simplified version of the Poset without the transitive relations.
+ *
+ * After applying the transitive property (transitive expansion), the above example becomes:
+ *
+ * 1 1 1 0
+ * 0 1 1 0
+ * 0 0 1 0
+ * 1 1 1 1
+ *
+ * When creating the Poset, the constructor always does the transitive expansion if necessary.
+ *
+ * Once the Poset is created, it is possible to get a copy where the internal representation is the
+ * transitive reduction.
+ *
+ * A Poset can be interpreted as a directed acyclic graph (DAG) in which the shortest distance between
+ * all pairs of elements that are connected is always 1 (transitivity property).
+ * Therefore, as a DAG, it is possible to compute its topological sort.
+ * According to https://en.wikipedia.org/wiki/Topological_sorting
+ *
+ * "topological sort or topological ordering of a directed graph is a linear ordering of its vertices
+ * such that for every directed edge uv from vertex u to vertex v, u comes before v in the ordering"
+ *
+ * In our example, if each element of the poset is identified by its position in the matrix representation,
+ * the topological sort is: [3,0,1,2].
+ * The topological sort can present ambiguity for elements that are not connected between them.
+ * It's worth noting that elements with the same number of ≤ cannot be connected (if a ≤ b, a will have at
+ * least one more ≤ than b)
+ *
+ */
 public class Poset {
 
   private final int[][] array;
@@ -21,52 +75,33 @@ public class Poset {
     this(arrayDeepCopy(array), TRANSITIVE_EXPANSION);
   }
 
-  private Poset(int[][] array, TransitivityMode transitivityMode) throws PosetException {
+  private Poset(int[][] array, TransitivityMode transitivityMode)  {
     if(transitivityMode == TRANSITIVE_EXPANSION) {
+      if(Arrays.stream(array).flatMapToInt(Arrays::stream).filter(j -> j != 0 && j != 1).count() > 0) {
+        throw new IllegalArgumentException("The Poset representation must contain the numbers 1 and 0 only");
+      }
       checkReflexivityAndAntiSymmetryLaws(array);
       this.array = transitiveExpansion(array);
     }
     else {
       this.array = array;
     }
-    this.numberOfBinaryRelations = (int) Arrays.stream(this.array).flatMapToInt(j -> Arrays.stream(j).filter(i -> i == 1)).count();
+    this.numberOfBinaryRelations = Arrays.stream(this.array).flatMapToInt(Arrays::stream).sum();
     this.transitivityMode = transitivityMode;
   }
 
   public int[][] getArrayRepresentation() {
     return arrayDeepCopy(array);
   }
+  public int getNumberOfBinaryRelations() {return numberOfBinaryRelations;}
+  public TransitivityMode getTransitivityMode() {return transitivityMode;}
 
   /**
    * Build a Poset based on the representation stored in the given file
-   * The binary relation ≤ between the different pairs of elements is represented in a matrix where
-   * 1 indicates that the elements are related to each other
-   *
-   * For instance, given a set of 4 elements [a,b,c,d], here's an example of a binary relation between them:
-   *
-   * 1 1 0 0
-   * 0 1 1 0
-   * 0 0 1 0
-   * 1 0 0 1
-   *
-   * Because of the reflexivity law, all elements in the main diagonal must be 1.
-   * Because of the antysimmetry law, elements in symmetric positions cannot be both 1.
-   *
-   * If a transitive reduction (https://en.wikipedia.org/wiki/Transitive_reduction) is provided, the transitivity law
-   * will be applied in order to generate the final version of the Poset.
-   *
-   * For instance, after applying the transitivity law to the previous example, the final result is
-   *
-   * 1 1 1 0
-   * 0 1 1 0
-   * 0 0 1 0
-   * 1 1 1 1
-   *
-   * The application of the transitivity law fails if the result violates the antisymmetry law.
    *
    * @param file File containing the Poset representation
    * @return Final version of the Poset with the transitivity law applied
-   * @throws IOException
+   * @throws IOException If file read fails
    * @throws IllegalArgumentException If chars other than numbers are used
    * @throws PosetException If any of the Poset laws is violated
    */
@@ -108,13 +143,17 @@ public class Poset {
     return sb.toString();
   }
 
-  public Poset transitiveReduction() throws PosetException {
+  /**
+   * Returns a new Poset whose internal representation is
+   * the transitive reduction (https://en.wikipedia.org/wiki/Transitive_reduction) of this
+   */
+  public Poset transitiveReduction() {
     int[][] newArray = arrayDeepCopy(array);
     for(int i=0; i<array.length; i++){
       for(int j=0; j<array[i].length; j++){
         if(i != j && array[i][j] == 1){
-          for(int k=j+1; k<array[j].length; k++){
-            if(array[j][k] == 1){
+          for(int k=0; k<array[j].length; k++){
+            if(j != k && array[j][k] == 1){
               newArray[i][k] = 0;
             }
           }
@@ -127,68 +166,73 @@ public class Poset {
   /**
    * Applying the transitivity law is equivalent to doing a bitwise OR between a row and the rows it points to
    * Every time a row is updated, all the rows pointing to it must be updated and so on.
-   * To do so, this method implements the Observer pattern:
+   * To implement this pattern of cascading changes, this method makes use of the Observer pattern:
    * - the observed subject is the considered row
    * - the observers or subscribers are the other rows that point to it
+   *
+   * After doing the transitive expansion, it is necessary to verify that the resulting Poset still complies
+   * with the antisymmetry property
    *
    * This method is the inverse of a transitive reduction (https://en.wikipedia.org/wiki/Transitive_reduction)
    *
    *
-   * @param poset
-   * @return
-   * @throws TransitivityException
+   * @param array Internal representation of the Poset
+   * @return Original array updated in place
+   * @throws InvalidPoset Thrown if transitive expansion is not possible
    */
-  private int[][] transitiveExpansion(int[][] array) throws PosetException {
-    int[][] newArray = arrayDeepCopy(array);
+  private int[][] transitiveExpansion(int[][] array) {
     //initialisation
-    Row[] rows = new Row[newArray.length];
-    for (int i=0; i<newArray.length; i++){
-      rows[i] = new Row(newArray[i]);
+    AuxRowForTransitiveExpansion[] rows = new AuxRowForTransitiveExpansion[array.length];
+    for (int i=0; i<array.length; i++){
+      rows[i] = new AuxRowForTransitiveExpansion(array[i]);
     }
 
     //register subscribers
-    for (int i=0; i<newArray.length; i++){
-      for(int j=0; j<newArray[i].length; j++){
-        if(newArray[i][j]==1 && i != j){
+    for (int i=0; i<array.length; i++){
+      for(int j=0; j<array[i].length; j++){
+        if(array[i][j]==1 && i != j){
           rows[j].registerSubscriber(rows[i]);
         }
       }
     }
 
     //kick-off updates
-    for(Row row: rows){
+    for(AuxRowForTransitiveExpansion row: rows){
       row.notifySubscribers();
     }
 
     //re-build poset
     for (int i=0; i<rows.length; i++){
-      newArray[i] = rows[i].row;
+      array[i] = rows[i].row;
     }
 
     //check that antisymmetry law is not violated
     try {
-      checkReflexivityAndAntiSymmetryLaws(newArray);
+      checkReflexivityAndAntiSymmetryLaws(array);
     } catch (PosetException e) {
-      throw new TransitivityException();
+      throw new InvalidPoset();
     }
 
-    return newArray;
+    return array;
   }
 
 
   /**
-   * Topological sort (https://en.wikipedia.org/wiki/Topological_sorting)
-   * Each element of the poset is labelled by its position in the matrix representation
+   *
+   * This algorithm consists in sorting the rows by the sum of its elements (as we use 1s and 0s
+   * to represent the binary relations, the sum of the elements of each row is equivalent to counting
+   * the number of binary relations of each element)
+   *
    * @return Array of sorted labels
    */
   public int[] sort() {
     if(this.transitivityMode != TRANSITIVE_EXPANSION){
-      throw new UnsupportedOperationException();
+      throw new UnsupportedOperationException("Transitive expansion of the Poset is required");
     }
     //initialisation
-    LabelledRow[] rows = new LabelledRow[array.length];
+    AuxRowForSort[] rows = new AuxRowForSort[array.length];
     for (int i = 0; i< array.length; i++){
-      rows[i] = new LabelledRow(array[i], i);
+      rows[i] = new AuxRowForSort(array[i], i);
     }
 
     Arrays.sort(rows, (o1, o2) -> o2.numberOfBinaryRelations - o1.numberOfBinaryRelations);
@@ -197,28 +241,31 @@ public class Poset {
   }
 
   /**
-   * Auxiliar object to do the topological sort of the poset
+   * Auxiliary object to do the topological sort of the poset
    */
-  static class LabelledRow {
+  static class AuxRowForSort {
     private final int label;
     private final int numberOfBinaryRelations;
 
-    LabelledRow(int[] row, int label){
+    AuxRowForSort(int[] row, int label){
       this.label = label;
-      this.numberOfBinaryRelations = Arrays.stream(row).filter(elem -> elem == 1).toArray().length;
+      this.numberOfBinaryRelations = Arrays.stream(row).sum();
     }
   }
 
-  static class Row {
+  /**
+   * Auxiliary object to do the transitive expansion of the poset
+   */
+  static class AuxRowForTransitiveExpansion {
 
-    Row(int[] row){
+    AuxRowForTransitiveExpansion(int[] row){
       this.row = row;
     }
 
     private final int[] row;
-    private final List<Row> subscribers = new ArrayList<>();
+    private final List<AuxRowForTransitiveExpansion> subscribers = new ArrayList<>();
 
-    void registerSubscriber(Row subscriber) {
+    void registerSubscriber(AuxRowForTransitiveExpansion subscriber) {
       subscribers.add(subscriber);
     }
 
@@ -229,7 +276,7 @@ public class Poset {
     /**
      * bitwise OR between this.row and otherRow.row
      */
-    void update(Row otherRow){
+    void update(AuxRowForTransitiveExpansion otherRow){
       boolean updated = false;
       for(int j=0; j<otherRow.row.length; j++){
         if(otherRow.row[j]==1 && this.row[j]!=1){

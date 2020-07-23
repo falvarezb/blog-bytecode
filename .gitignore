@@ -100,3 +100,4 @@ project/plugins/project/
 /project/target/
 
 .spyproject/
+.jqwik-database

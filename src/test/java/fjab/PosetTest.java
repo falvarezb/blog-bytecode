@@ -4,8 +4,6 @@ package fjab;
 import net.jqwik.api.*;
 import net.jqwik.api.arbitraries.IntegerArbitrary;
 import net.jqwik.api.statistics.Statistics;
-import net.jqwik.engine.support.Combinatorics;
-import net.jqwik.engine.support.MathSupport;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -15,8 +13,8 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.*;
-import java.util.function.Function;
+import java.util.List;
+import java.util.Random;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -347,76 +345,5 @@ public class PosetTest {
     }
   }
 
-  public static <T> Arbitrary<List<T>> shuffle(List<T> values) {
-    return fromGenerators(
-      permutationWithRepetitionRandomGenerator(values),
-      max -> permutationWithRepetitionExhaustiveGenerator(values, max),
-      EdgeCases.fromSupplier(() -> Shrinkable.unshrinkable(values))
-    );
-  }
 
-  public static <T> RandomGenerator<List<T>> permutationWithRepetitionRandomGenerator(List<T> values) {
-    return (random) -> {
-      List<T> clone = new ArrayList(values);
-      Collections.shuffle(clone, random); //TODO
-      return Shrinkable.unshrinkable(clone);
-    };
-  }
-
-  public static <T> Optional<ExhaustiveGenerator<List<T>>> permutationWithRepetitionExhaustiveGenerator(List<T> values, long maxNumberOfSamples) {
-    Optional<Long> optionalMaxCount = PermutationExhaustiveGenerator.calculateMaxCount(values, maxNumberOfSamples);
-    return optionalMaxCount.map((maxCount) -> {
-      return new PermutationExhaustiveGenerator(values, maxCount);
-    });
-  }
-
-  static class PermutationExhaustiveGenerator<T> implements ExhaustiveGenerator<List<T>> {
-    private final List<T> values;
-    private final Long maxCount;
-
-    public PermutationExhaustiveGenerator(List<T> values, Long maxCount) {
-      this.values = values;
-      this.maxCount = maxCount;
-    }
-
-    static <T> Optional<Long> calculateMaxCount(List<T> values, long maxNumberOfSamples) {
-      try {
-        long choices = MathSupport.factorial((long)values.size());//TODO
-        return choices <= maxNumberOfSamples && choices >= 0L ? Optional.of(choices) : Optional.empty();
-      } catch (ArithmeticException var5) {
-        return Optional.empty();
-      }
-    }
-
-    public long maxCount() {
-      return this.maxCount;
-    }
-
-    public Iterator<List<T>> iterator() {
-      return Combinatorics.listPermutations(this.values);//TODO
-    }
-  }
-
-  private static <T> Arbitrary<T> fromGenerators(
-    RandomGenerator<T> randomGenerator,
-    Function<Long, Optional<ExhaustiveGenerator<T>>> exhaustiveGeneratorFunction,
-    final EdgeCases<T> edgeCases
-  ) {
-    return new Arbitrary<T>() {
-      @Override
-      public RandomGenerator<T> generator(int tries) {
-        return randomGenerator;
-      }
-
-      @Override
-      public Optional<ExhaustiveGenerator<T>> exhaustive(long maxNumberOfSamples) {
-        return exhaustiveGeneratorFunction.apply(maxNumberOfSamples);
-      }
-
-      @Override
-      public EdgeCases<T> edgeCases() {
-        return edgeCases;
-      }
-    };
-  }
 }

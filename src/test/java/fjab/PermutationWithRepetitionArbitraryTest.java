@@ -20,7 +20,6 @@ class PermutationWithRepetitionArbitraryTest {
   }
 
   @Nested
-  //random sample of r elements taken from a population of n elements with replacement
   class RandomGeneratorTest {
 
     @Test
@@ -33,7 +32,7 @@ class PermutationWithRepetitionArbitraryTest {
         add("b");
       }};
       int r = 2;
-      Arbitrary<List<String>> arbitrary = PermutationWithRepetitionArbitrary.permutationWithRepetitionArbitrary(population, r);
+      Arbitrary<List<String>> arbitrary = new PermutationWithRepetitionArbitrary<>(population, r);
       List<String> allSamples = Arrays.asList("aa", "ab", "ba", "bb");
 
       //when
@@ -53,7 +52,7 @@ class PermutationWithRepetitionArbitraryTest {
         add("b");
       }};
       int r = 3;
-      Arbitrary<List<String>> arbitrary = PermutationWithRepetitionArbitrary.permutationWithRepetitionArbitrary(population, r);
+      Arbitrary<List<String>> arbitrary = new PermutationWithRepetitionArbitrary<>(population, r);
       List<String> allSamples = Arrays.asList(
         "aaa", "aab", "aba", "abb",
         "baa", "bab", "bba", "bbb"
@@ -78,7 +77,7 @@ class PermutationWithRepetitionArbitraryTest {
         add("c");
       }};
       int r = 2;
-      Arbitrary<List<String>> arbitrary = PermutationWithRepetitionArbitrary.permutationWithRepetitionArbitrary(population, r);
+      Arbitrary<List<String>> arbitrary = new PermutationWithRepetitionArbitrary<>(population, r);
       List<String> allSamples = Arrays.asList(
         "aa","ab","ac",
         "ba", "bb", "bc",
@@ -103,7 +102,7 @@ class PermutationWithRepetitionArbitraryTest {
         add("c");
       }};
       int r = 3;
-      Arbitrary<List<String>> arbitrary = PermutationWithRepetitionArbitrary.permutationWithRepetitionArbitrary(population, r);
+      Arbitrary<List<String>> arbitrary = new PermutationWithRepetitionArbitrary<>(population, r);
       List<String> allSamples = Arrays.asList(
         "aaa", "aab", "aac", "aba", "abb", "abc", "aca", "acb", "acc",
         "baa", "bab", "bac", "bba", "bbb", "bbc", "bca", "bcb", "bcc",
@@ -131,7 +130,7 @@ class PermutationWithRepetitionArbitraryTest {
         add("b");
       }};
       int r = 2;
-      Arbitrary<List<String>> arbitrary = PermutationWithRepetitionArbitrary.permutationWithRepetitionArbitrary(population, r);
+      Arbitrary<List<String>> arbitrary = new PermutationWithRepetitionArbitrary<>(population, r);
       List<String> allSamples = Arrays.asList("aa", "ab", "ba", "bb");
 
       //when
@@ -152,7 +151,7 @@ class PermutationWithRepetitionArbitraryTest {
         add("b");
       }};
       int r = 3;
-      Arbitrary<List<String>> arbitrary = PermutationWithRepetitionArbitrary.permutationWithRepetitionArbitrary(population, r);
+      Arbitrary<List<String>> arbitrary = new PermutationWithRepetitionArbitrary<>(population, r);
       List<String> allSamples = Arrays.asList(
         "aaa", "aab", "aba", "abb",
         "baa", "bab", "bba", "bbb"
@@ -177,7 +176,7 @@ class PermutationWithRepetitionArbitraryTest {
         add("c");
       }};
       int r = 2;
-      Arbitrary<List<String>> arbitrary = PermutationWithRepetitionArbitrary.permutationWithRepetitionArbitrary(population, r);
+      Arbitrary<List<String>> arbitrary = new PermutationWithRepetitionArbitrary<>(population, r);
       List<String> allSamples = Arrays.asList(
         "aa","ab","ac",
         "ba", "bb", "bc",
@@ -203,7 +202,7 @@ class PermutationWithRepetitionArbitraryTest {
         add("c");
       }};
       int r = 3;
-      Arbitrary<List<String>> arbitrary = PermutationWithRepetitionArbitrary.permutationWithRepetitionArbitrary(population, r);
+      Arbitrary<List<String>> arbitrary = new PermutationWithRepetitionArbitrary<>(population, r);
       List<String> allSamples = Arrays.asList(
         "aaa", "aab", "aac", "aba", "abb", "abc", "aca", "acb", "acc",
         "baa", "bab", "bac", "bba", "bbb", "bbc", "bca", "bcb", "bcc",

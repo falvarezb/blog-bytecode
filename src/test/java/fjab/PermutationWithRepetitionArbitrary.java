@@ -74,7 +74,7 @@ public class PermutationWithRepetitionArbitrary<T> implements Arbitrary<List<T>>
 
     @Override
     public Iterator<List<T>> iterator() {
-      return new PermutationWithRepetitionIterator<>(this.population, this.r);
+      return new PermutationWithRepetitionLazyIterator<>(this.population, this.r);
     }
   }
 

@@ -34,7 +34,7 @@ import static fjab.Util.*;
  * - The following ASCII characters are used as digits: 0123456789abcdefghijklmnopqrstuvwxyz
  *
  */
-public class PermutationWithRepetitionIterator<T> implements Iterator<List<T>>{
+public class PermutationWithRepetitionLazyIterator<T> implements Iterator<List<T>>{
 
   private final List<T> population;
   private final int r;
@@ -44,7 +44,7 @@ public class PermutationWithRepetitionIterator<T> implements Iterator<List<T>>{
 
   private static final String digits = "0123456789abcdefghijklmnopqrstuvwxyz";
 
-  public PermutationWithRepetitionIterator(List<T> population, int r) {
+  public PermutationWithRepetitionLazyIterator(List<T> population, int r) {
     this.population = population;
     this.r = r;
     n = population.size();

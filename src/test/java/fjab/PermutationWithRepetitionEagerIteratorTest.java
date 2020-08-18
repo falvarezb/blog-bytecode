@@ -9,9 +9,8 @@ import java.util.List;
 
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-class PermutationWithRepetitionIteratorTest {
+class PermutationWithRepetitionEagerIteratorTest {
 
   @Test
   @DisplayName("iteration over samples corresponding to: n=2, r=2")
@@ -31,12 +30,12 @@ class PermutationWithRepetitionIteratorTest {
     );
 
     //when
-    PermutationWithRepetitionIterator<String> iter = new PermutationWithRepetitionIterator<>(population, r);
+    PermutationWithRepetitionEagerIterator<String> iter = new PermutationWithRepetitionEagerIterator<>(population, r);
     List<List<String>> results = new ArrayList<>();
     iter.forEachRemaining(results::add);
 
     //then
-    assertThat(allSamples).isEqualTo(results);
+    assertThat(allSamples).containsExactlyInAnyOrderElementsOf(results);
   }
 
   @Test
@@ -55,12 +54,12 @@ class PermutationWithRepetitionIteratorTest {
     );
 
     //when
-    PermutationWithRepetitionIterator<String> iter = new PermutationWithRepetitionIterator<>(population, r);
+    PermutationWithRepetitionEagerIterator<String> iter = new PermutationWithRepetitionEagerIterator<>(population, r);
     List<List<String>> results = new ArrayList<>();
     iter.forEachRemaining(results::add);
 
     //then
-    assertThat(allSamples).isEqualTo(results);
+    assertThat(allSamples).containsExactlyInAnyOrderElementsOf(results);
   }
 
   @Test
@@ -95,29 +94,12 @@ class PermutationWithRepetitionIteratorTest {
     );
 
     //when
-    PermutationWithRepetitionIterator<String> iter = new PermutationWithRepetitionIterator<>(population, r);
+    PermutationWithRepetitionEagerIterator<String> iter = new PermutationWithRepetitionEagerIterator<>(population, r);
     List<List<String>> results = new ArrayList<>();
     iter.forEachRemaining(results::add);
 
     //then
     assertThat(allSamples).isEqualTo(results);
-  }
-
-  @Test
-  @DisplayName("error when population length is less than 2: n=1, r=1")
-  public void iteration_1_1() {
-
-    //given
-    List<String> population = new ArrayList<>() {{
-      add("A");
-    }};
-    int r = 1;
-
-
-    //then
-    assertThatThrownBy(() -> new PermutationWithRepetitionIterator<>(population, r))
-      .isInstanceOf(IllegalArgumentException.class)
-      .hasMessage("2 <= n <= 36");
   }
 
 }

@@ -10,7 +10,7 @@ import java.util.List;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
-class PermutationWithRepetitionEagerIteratorTest {
+class EagerPermutationWithRepetitionIteratorTest {
 
   @Test
   @DisplayName("iteration over samples corresponding to: n=2, r=2")
@@ -30,7 +30,7 @@ class PermutationWithRepetitionEagerIteratorTest {
     );
 
     //when
-    PermutationWithRepetitionEagerIterator<String> iter = new PermutationWithRepetitionEagerIterator<>(population, r);
+    EagerPermutationWithRepetitionIterator<String> iter = new EagerPermutationWithRepetitionIterator<>(population, r);
     List<List<String>> results = new ArrayList<>();
     iter.forEachRemaining(results::add);
 
@@ -54,7 +54,7 @@ class PermutationWithRepetitionEagerIteratorTest {
     );
 
     //when
-    PermutationWithRepetitionEagerIterator<String> iter = new PermutationWithRepetitionEagerIterator<>(population, r);
+    EagerPermutationWithRepetitionIterator<String> iter = new EagerPermutationWithRepetitionIterator<>(population, r);
     List<List<String>> results = new ArrayList<>();
     iter.forEachRemaining(results::add);
 
@@ -94,7 +94,7 @@ class PermutationWithRepetitionEagerIteratorTest {
     );
 
     //when
-    PermutationWithRepetitionEagerIterator<String> iter = new PermutationWithRepetitionEagerIterator<>(population, r);
+    EagerPermutationWithRepetitionIterator<String> iter = new EagerPermutationWithRepetitionIterator<>(population, r);
     List<List<String>> results = new ArrayList<>();
     iter.forEachRemaining(results::add);
 

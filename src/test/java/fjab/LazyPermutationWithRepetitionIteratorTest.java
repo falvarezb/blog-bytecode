@@ -11,7 +11,7 @@ import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-class PermutationWithRepetitionLazyIteratorTest {
+class LazyPermutationWithRepetitionIteratorTest {
 
   @Test
   @DisplayName("iteration over samples corresponding to: n=2, r=2")
@@ -31,7 +31,7 @@ class PermutationWithRepetitionLazyIteratorTest {
     );
 
     //when
-    PermutationWithRepetitionLazyIterator<String> iter = new PermutationWithRepetitionLazyIterator<>(population, r);
+    LazyPermutationWithRepetitionIterator<String> iter = new LazyPermutationWithRepetitionIterator<>(population, r);
     List<List<String>> results = new ArrayList<>();
     iter.forEachRemaining(results::add);
 
@@ -55,7 +55,7 @@ class PermutationWithRepetitionLazyIteratorTest {
     );
 
     //when
-    PermutationWithRepetitionLazyIterator<String> iter = new PermutationWithRepetitionLazyIterator<>(population, r);
+    LazyPermutationWithRepetitionIterator<String> iter = new LazyPermutationWithRepetitionIterator<>(population, r);
     List<List<String>> results = new ArrayList<>();
     iter.forEachRemaining(results::add);
 
@@ -95,7 +95,7 @@ class PermutationWithRepetitionLazyIteratorTest {
     );
 
     //when
-    PermutationWithRepetitionLazyIterator<String> iter = new PermutationWithRepetitionLazyIterator<>(population, r);
+    LazyPermutationWithRepetitionIterator<String> iter = new LazyPermutationWithRepetitionIterator<>(population, r);
     List<List<String>> results = new ArrayList<>();
     iter.forEachRemaining(results::add);
 
@@ -115,7 +115,7 @@ class PermutationWithRepetitionLazyIteratorTest {
 
 
     //then
-    assertThatThrownBy(() -> new PermutationWithRepetitionLazyIterator<>(population, r))
+    assertThatThrownBy(() -> new LazyPermutationWithRepetitionIterator<>(population, r))
       .isInstanceOf(IllegalArgumentException.class)
       .hasMessage("2 <= n <= 36");
   }

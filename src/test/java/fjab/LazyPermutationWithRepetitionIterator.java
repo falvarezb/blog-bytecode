@@ -7,10 +7,10 @@ import java.util.stream.Collectors;
 import static fjab.Util.*;
 
 /**
- * Iterator over samples of r elements of type T taken from a population of n elements with replacement.
- * The total number of samples is n^r
+ * Iterator over permutations of r elements of type T taken from a population of n elements with replacement.
+ * The total number of permutations is n^r
  *
- * Samples are calculated lazily based on a simple observation: all the permutations are given by the representation
+ * Permutations are calculated lazily based on a simple observation: all the permutations are given by the representation
  * in base 'n' of the numbers 0, 1, ..., n^r-1.
  *
  * For instance, given a list of 2 elements [0, 1] (n=2), all the permutation of 3 elements are:
@@ -34,7 +34,7 @@ import static fjab.Util.*;
  * - The following ASCII characters are used as digits: 0123456789abcdefghijklmnopqrstuvwxyz
  *
  */
-public class PermutationWithRepetitionLazyIterator<T> implements Iterator<List<T>>{
+public class LazyPermutationWithRepetitionIterator<T> implements Iterator<List<T>>{
 
   private final List<T> population;
   private final int r;
@@ -44,7 +44,7 @@ public class PermutationWithRepetitionLazyIterator<T> implements Iterator<List<T
 
   private static final String digits = "0123456789abcdefghijklmnopqrstuvwxyz";
 
-  public PermutationWithRepetitionLazyIterator(List<T> population, int r) {
+  public LazyPermutationWithRepetitionIterator(List<T> population, int r) {
     this.population = population;
     this.r = r;
     n = population.size();

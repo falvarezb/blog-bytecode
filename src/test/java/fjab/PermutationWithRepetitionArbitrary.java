@@ -2,14 +2,16 @@ package fjab;
 
 import net.jqwik.api.*;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.IntStream;
 
 import static java.util.stream.Collectors.toList;
 
 /**
- * Arbitrary sample of r elements of type T taken from a population of n elements with replacement
+ * Arbitrary permutations of r elements of type T taken from a population of n elements with replacement
  */
 public class PermutationWithRepetitionArbitrary<T> implements Arbitrary<List<T>>{
 
@@ -21,17 +23,10 @@ public class PermutationWithRepetitionArbitrary<T> implements Arbitrary<List<T>>
     this.r = r;
   }
 
-  private List<T> randomPermutationWithRepetition(List<T> values, int repetitions, Random random) {
-    return random
-      .ints(0,values.size())
-      .mapToObj(values::get).limit(repetitions)
-      .collect(Collectors.toList());
-  }
-
   @Override
   public RandomGenerator<List<T>> generator(int genSize) {
     return (random) -> {
-      List<T> permutation = randomPermutationWithRepetition(population, r, random);
+      List<T> permutation = PermutationWithRepetition.randomPermutation(population, r, random);
       return Shrinkable.unshrinkable(permutation);
     };
   }
@@ -74,7 +69,7 @@ public class PermutationWithRepetitionArbitrary<T> implements Arbitrary<List<T>>
 
     @Override
     public Iterator<List<T>> iterator() {
-      return new PermutationWithRepetitionLazyIterator<>(this.population, this.r);
+      return new LazyPermutationWithRepetitionIterator<>(this.population, this.r);
     }
   }
 

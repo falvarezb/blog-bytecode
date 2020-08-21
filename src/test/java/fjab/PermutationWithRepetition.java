@@ -1,9 +1,9 @@
 package fjab;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.stream.Collectors;
+
+import static java.util.Collections.singletonList;
 
 /**
  * Methods to obtain permutations of r elements of type T taken from a population of n elements with replacement.
@@ -23,9 +23,7 @@ public class PermutationWithRepetition {
 
   public static <T> List<List<T>> allPermutations(List<T> population, int r) {
     if (r == 0) {
-      return new ArrayList<>() {{
-        add(new ArrayList<>());
-      }};
+      return singletonList(new ArrayList<>());
     }
 
     List<List<T>> result = new ArrayList<>();

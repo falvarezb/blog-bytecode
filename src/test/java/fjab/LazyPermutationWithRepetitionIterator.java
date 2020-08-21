@@ -2,6 +2,7 @@ package fjab;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 import static fjab.Util.*;
@@ -63,6 +64,9 @@ public class LazyPermutationWithRepetitionIterator<T> implements Iterator<List<T
 
   @Override
   public List<T> next() {
+    if (!this.hasNext()) {
+      throw new NoSuchElementException();
+    }
     String permutation = leftPad(Integer.toString(counter++, n), r, '0');
     return stringToStream(permutation).map(digits::indexOf).map(population::get).collect(Collectors.toList());
   }

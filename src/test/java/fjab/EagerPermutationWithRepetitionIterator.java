@@ -2,6 +2,7 @@ package fjab;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 /**
  * Iterator over permutations of r elements of type T taken from a population of n elements with replacement.
@@ -28,6 +29,9 @@ public class EagerPermutationWithRepetitionIterator<T> implements Iterator<List<
 
   @Override
   public List<T> next() {
+    if (!this.hasNext()) {
+      throw new NoSuchElementException();
+    }
     return permutations.get(counter++);
   }
 }

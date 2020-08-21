@@ -1,6 +1,6 @@
 package fjab;
 
-import net.jqwik.api.*;
+import net.jqwik.api.Arbitrary;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -14,10 +14,6 @@ import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class PermutationWithRepetitionArbitraryTest {
-
-  static String fromListToString(List<String> list) {
-    return list.stream().reduce("", (a, b) -> a + b);
-  }
 
   @Nested
   class RandomGeneratorTest {
@@ -33,13 +29,13 @@ class PermutationWithRepetitionArbitraryTest {
       }};
       int r = 2;
       Arbitrary<List<String>> arbitrary = new PermutationWithRepetitionArbitrary<>(population, r);
-      List<String> allSamples = Arrays.asList("aa", "ab", "ba", "bb");
+      List<String> allPossiblePermutations = Arrays.asList("aa", "ab", "ba", "bb");
 
       //when
-      Stream<String> sample = arbitrary.sampleStream().limit(20).map(PermutationWithRepetitionArbitraryTest::fromListToString);
+      Stream<String> someSamples = arbitrary.sampleStream().limit(20).map(Util::listToString);
 
       //then
-      assertThat(sample).allMatch(allSamples::contains);
+      assertThat(someSamples).allMatch(allPossiblePermutations::contains);
     }
 
     @Test
@@ -53,16 +49,16 @@ class PermutationWithRepetitionArbitraryTest {
       }};
       int r = 3;
       Arbitrary<List<String>> arbitrary = new PermutationWithRepetitionArbitrary<>(population, r);
-      List<String> allSamples = Arrays.asList(
+      List<String> allPossiblePermutations = Arrays.asList(
         "aaa", "aab", "aba", "abb",
         "baa", "bab", "bba", "bbb"
       );
 
       //when
-      Stream<String> sample = arbitrary.sampleStream().limit(100).map(PermutationWithRepetitionArbitraryTest::fromListToString);
+      Stream<String> someSamples = arbitrary.sampleStream().limit(100).map(Util::listToString);
 
       //then
-      assertThat(sample).allMatch(allSamples::contains);
+      assertThat(someSamples).allMatch(allPossiblePermutations::contains);
     }
 
 
@@ -78,17 +74,17 @@ class PermutationWithRepetitionArbitraryTest {
       }};
       int r = 2;
       Arbitrary<List<String>> arbitrary = new PermutationWithRepetitionArbitrary<>(population, r);
-      List<String> allSamples = Arrays.asList(
+      List<String> allPossiblePermutations = Arrays.asList(
         "aa","ab","ac",
         "ba", "bb", "bc",
         "ca", "cb", "cc"
       );
 
       //when
-      Stream<String> sample = arbitrary.sampleStream().limit(100).map(PermutationWithRepetitionArbitraryTest::fromListToString);
+      Stream<String> someSamples = arbitrary.sampleStream().limit(100).map(Util::listToString);
 
       //then
-      assertThat(sample).allMatch(allSamples::contains);
+      assertThat(someSamples).allMatch(allPossiblePermutations::contains);
     }
 
     @Test
@@ -103,17 +99,17 @@ class PermutationWithRepetitionArbitraryTest {
       }};
       int r = 3;
       Arbitrary<List<String>> arbitrary = new PermutationWithRepetitionArbitrary<>(population, r);
-      List<String> allSamples = Arrays.asList(
+      List<String> allPossiblePermutations = Arrays.asList(
         "aaa", "aab", "aac", "aba", "abb", "abc", "aca", "acb", "acc",
         "baa", "bab", "bac", "bba", "bbb", "bbc", "bca", "bcb", "bcc",
         "caa", "cab", "cac", "cba", "cbb", "cbc", "cca", "ccb", "ccc"
       );
 
       //when
-      Stream<String> sample = arbitrary.sampleStream().limit(300).map(PermutationWithRepetitionArbitraryTest::fromListToString);
+      Stream<String> someSamples = arbitrary.sampleStream().limit(300).map(Util::listToString);
 
       //then
-      assertThat(sample).allMatch(allSamples::contains);
+      assertThat(someSamples).allMatch(allPossiblePermutations::contains);
     }
   }
 
@@ -125,20 +121,16 @@ class PermutationWithRepetitionArbitraryTest {
     public void allPermutations_2_2() {
 
       //given
-      List<String> population = new ArrayList<>() {{
-        add("a");
-        add("b");
-      }};
+      List<String> population = Arrays.asList("a", "b");
       int r = 2;
       Arbitrary<List<String>> arbitrary = new PermutationWithRepetitionArbitrary<>(population, r);
-      List<String> allSamples = Arrays.asList("aa", "ab", "ba", "bb");
+      List<String> allPossiblePermutations = Arrays.asList("aa", "ab", "ba", "bb");
 
       //when
-      List<String> samples = arbitrary.allValues().get().map(PermutationWithRepetitionArbitraryTest::fromListToString).collect(toList());
+      List<String> allValues = arbitrary.allValues().get().map(Util::listToString).collect(toList());
 
       //then
-      assertThat(samples.size()).isEqualTo(4);
-      assertThat(samples).allMatch(allSamples::contains);
+      assertThat(allValues).containsExactlyInAnyOrderElementsOf(allPossiblePermutations);
     }
 
     @Test
@@ -146,23 +138,19 @@ class PermutationWithRepetitionArbitraryTest {
     public void allPermutations_2_3() {
 
       //given
-      List<String> population = new ArrayList<>() {{
-        add("a");
-        add("b");
-      }};
+      List<String> population = Arrays.asList("a", "b");
       int r = 3;
       Arbitrary<List<String>> arbitrary = new PermutationWithRepetitionArbitrary<>(population, r);
-      List<String> allSamples = Arrays.asList(
+      List<String> allPossiblePermutations = Arrays.asList(
         "aaa", "aab", "aba", "abb",
         "baa", "bab", "bba", "bbb"
       );
 
       //when
-      List<String> samples = arbitrary.allValues().get().map(PermutationWithRepetitionArbitraryTest::fromListToString).collect(toList());
+      List<String> allValues = arbitrary.allValues().get().map(Util::listToString).collect(toList());
 
       //then
-      assertThat(samples.size()).isEqualTo(8);
-      assertThat(samples).allMatch(allSamples::contains);
+      assertThat(allValues).containsExactlyInAnyOrderElementsOf(allPossiblePermutations);
     }
 
     @Test
@@ -170,25 +158,20 @@ class PermutationWithRepetitionArbitraryTest {
     public void allPermutations_3_2() {
 
       //given
-      List<String> population = new ArrayList<>() {{
-        add("a");
-        add("b");
-        add("c");
-      }};
+      List<String> population = Arrays.asList("a", "b", "c");
       int r = 2;
       Arbitrary<List<String>> arbitrary = new PermutationWithRepetitionArbitrary<>(population, r);
-      List<String> allSamples = Arrays.asList(
+      List<String> allPossiblePermutations = Arrays.asList(
         "aa","ab","ac",
         "ba", "bb", "bc",
         "ca", "cb", "cc"
       );
 
       //when
-      List<String> samples = arbitrary.allValues().get().map(PermutationWithRepetitionArbitraryTest::fromListToString).collect(toList());
+      List<String> allValues = arbitrary.allValues().get().map(Util::listToString).collect(toList());
 
       //then
-      assertThat(samples.size()).isEqualTo(9);
-      assertThat(samples).allMatch(allSamples::contains);
+      assertThat(allValues).containsExactlyInAnyOrderElementsOf(allPossiblePermutations);
     }
 
     @Test
@@ -196,25 +179,20 @@ class PermutationWithRepetitionArbitraryTest {
     public void allPermutations_3_3() {
 
       //given
-      List<String> population = new ArrayList<>() {{
-        add("a");
-        add("b");
-        add("c");
-      }};
+      List<String> population = Arrays.asList("a", "b", "c");
       int r = 3;
       Arbitrary<List<String>> arbitrary = new PermutationWithRepetitionArbitrary<>(population, r);
-      List<String> allSamples = Arrays.asList(
+      List<String> allPossiblePermutations = Arrays.asList(
         "aaa", "aab", "aac", "aba", "abb", "abc", "aca", "acb", "acc",
         "baa", "bab", "bac", "bba", "bbb", "bbc", "bca", "bcb", "bcc",
         "caa", "cab", "cac", "cba", "cbb", "cbc", "cca", "ccb", "ccc"
       );
 
       //when
-      List<String> samples = arbitrary.allValues().get().map(PermutationWithRepetitionArbitraryTest::fromListToString).collect(toList());
+      List<String> allValues = arbitrary.allValues().get().map(Util::listToString).collect(toList());
 
       //then
-      assertThat(samples.size()).isEqualTo(27);
-      assertThat(samples).allMatch(allSamples::contains);
+      assertThat(allValues).containsExactlyInAnyOrderElementsOf(allPossiblePermutations);
     }
   }
 }

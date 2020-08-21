@@ -2,13 +2,9 @@ package fjab;
 
 import net.jqwik.api.*;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.IntStream;
-
-import static java.util.stream.Collectors.toList;
 
 /**
  * Arbitrary permutations of r elements of type T taken from a population of n elements with replacement
@@ -33,7 +29,8 @@ public class PermutationWithRepetitionArbitrary<T> implements Arbitrary<List<T>>
 
   @Override
   public Optional<ExhaustiveGenerator<List<T>>> exhaustive(long maxNumberOfSamples) {
-    Optional<Long> optionalMaxCount = PermutationWithRepetitionExhaustiveGenerator.calculateMaxCount(population, maxNumberOfSamples, r);
+    long numPermutations = (long) Math.pow(population.size(), r);
+    Optional<Long> optionalMaxCount = numPermutations <= maxNumberOfSamples ? Optional.of(numPermutations) : Optional.empty();
     return optionalMaxCount.map((maxCount) -> new PermutationWithRepetitionExhaustiveGenerator<>(population, maxCount, r));
   }
 
@@ -53,15 +50,6 @@ public class PermutationWithRepetitionArbitrary<T> implements Arbitrary<List<T>>
       this.r = r;
     }
 
-    static <T> Optional<Long> calculateMaxCount(List<T> population, long maxNumberOfSamples, int r) {
-      try {
-        long choices = (long) Math.pow(population.size(), r);
-        return choices <= maxNumberOfSamples && choices >= 0L ? Optional.of(choices) : Optional.empty();
-      } catch (ArithmeticException var5) {
-        return Optional.empty();
-      }
-    }
-
     @Override
     public long maxCount() {
       return this.maxCount;
@@ -70,34 +58,6 @@ public class PermutationWithRepetitionArbitrary<T> implements Arbitrary<List<T>>
     @Override
     public Iterator<List<T>> iterator() {
       return new LazyPermutationWithRepetitionIterator<>(this.population, this.r);
-    }
-  }
-
-  private static List<Integer> padToTheRight(List<Integer> ints, int length) {
-    int numExtraElements = length - ints.size();
-    ints.addAll(IntStream.range(0,numExtraElements).boxed().collect(toList()));
-    return ints;
-  }
-
-  /**
-   * leading digit is in the rightmost position
-   * @param n
-   * @return
-   */
-  public static List<Integer> baseNRepresentation(int n, int radix) {
-    int q = n/radix;
-    int r = n%radix;
-
-    if(q == 0) {
-      return new ArrayList<>(){{
-        add(r);
-      }};
-    }
-    else {
-      return new ArrayList<>(){{
-        add(r);
-        addAll(baseNRepresentation(q, radix));
-      }};
     }
   }
 

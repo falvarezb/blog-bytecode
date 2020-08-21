@@ -1,5 +1,6 @@
 package fjab;
 
+import java.util.List;
 import java.util.stream.Stream;
 
 public class Util {
@@ -24,7 +25,7 @@ public class Util {
   }
 
   /**
-   * Given a String, this method returns a Stream of the chars of that String
+   * Returns the string given as parameter as a Stream of characters
    *
    * Example:
    * "abcd" => Stream('a','b','c','d')
@@ -32,5 +33,15 @@ public class Util {
    */
   public static Stream<Character> stringToStream(String str) {
     return str.chars().mapToObj(c -> (char) c);
+  }
+
+  /**
+   * Returns the single string resulting of concatenating all strings in the given list
+   *
+   * Example:
+   * List("a","b","c","d") => "abcd"
+   */
+  public static String listToString(List<String> list) {
+    return list.stream().reduce("", (a, b) -> a + b);
   }
 }

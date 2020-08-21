@@ -11,13 +11,12 @@ import java.util.List;
  */
 public class EagerPermutationWithRepetitionIterator<T> implements Iterator<List<T>>{
 
-  private final int n;
   private final long numPermutations;
   private final List<List<T>> permutations;
   private int counter;
 
   public EagerPermutationWithRepetitionIterator(List<T> population, int r) {
-    n = population.size();
+    int n = population.size();
     numPermutations = (long) Math.pow(n, r);
     permutations = PermutationWithRepetition.allPermutations(population, r);
   }

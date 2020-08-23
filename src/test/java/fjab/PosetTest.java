@@ -2,7 +2,6 @@ package fjab;
 
 
 import net.jqwik.api.*;
-import net.jqwik.api.arbitraries.IntegerArbitrary;
 import net.jqwik.api.statistics.Statistics;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -13,10 +12,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.List;
-import java.util.Random;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 import static fjab.Poset.buildPosetFromFile;
@@ -38,11 +34,11 @@ public class PosetTest {
     };
     Poset poset = new Poset(array);
     assertArrayEquals(new int[][]{
-        {1, 1, 1, 0},
-        {0, 1, 1, 0},
-        {0, 0, 1, 0},
-        {1, 1, 1, 1}
-      }, poset.getArrayRepresentation());
+      {1, 1, 1, 0},
+      {0, 1, 1, 0},
+      {0, 0, 1, 0},
+      {1, 1, 1, 1}
+    }, poset.getArrayRepresentation());
 
     assertEquals(10, poset.getNumberOfBinaryRelations());
     assertEquals(TRANSITIVE_EXPANSION, poset.getTransitivityMode());
@@ -100,9 +96,6 @@ public class PosetTest {
       assertEquals("The Poset representation must contain the numbers 1 and 0 only", e.getMessage());
     }
   }
-
-
-
 
 
   @ParameterizedTest
@@ -191,9 +184,9 @@ public class PosetTest {
 
   static Stream<Arguments> sortSupplier() {
     return Stream.of(
-      arguments("src/test/resources/poset_success_1.txt", new int[]{3,0,1,2}),
-      arguments("src/test/resources/poset_success_2.txt", new int[]{1,0,2,3,4,5,6,7}),
-      arguments("src/test/resources/poset_success_3.txt", new int[]{4,3,2,1,0})
+      arguments("src/test/resources/poset_success_1.txt", new int[]{3, 0, 1, 2}),
+      arguments("src/test/resources/poset_success_2.txt", new int[]{1, 0, 2, 3, 4, 5, 6, 7}),
+      arguments("src/test/resources/poset_success_3.txt", new int[]{4, 3, 2, 1, 0})
     );
   }
 
@@ -202,68 +195,40 @@ public class PosetTest {
   //============== PROPERTY-BASED TESTS ===============//
   //===================================================//
 
-  @Property
-  /*
-   * TE(TR(TE(arr))) == TE(arr)
-   */
+  @Property(edgeCases = EdgeCasesMode.NONE)
+  @Label("TE(TR(TE(arr))) == TE(arr)")
   void transitiveExpansionAndReductionAreInverseOfEachOther(@ForAll("posetGenerator") Poset poset) {
     assertArrayEquals(new Poset(poset.transitiveReduction().getArrayRepresentation()).getArrayRepresentation(), poset.getArrayRepresentation());
     Statistics.collect(poset.getArrayRepresentation().length);
   }
 
-  @Property
-  /*
-   * Num(TR(TE(arr))) <= Num(TE(arr))
-   */
+  @Property(edgeCases = EdgeCasesMode.NONE)
+  @Label("Num(TR(TE(arr))) <= Num(TE(arr))")
   void numberOfBinaryRelationsOfTransitiveReductionIsEqualOrLessThanTransitiveExpansion(@ForAll("posetGenerator") Poset poset) {
     assertTrue(poset.transitiveReduction().getNumberOfBinaryRelations() <= poset.getNumberOfBinaryRelations());
     Statistics.collect(poset.getArrayRepresentation().length);
   }
 
-  @Property
+  @Property(edgeCases = EdgeCasesMode.NONE)
   boolean transitiveReductionContainsTheMinimumNumberOfBinaryRelations(@ForAll("posetGenerator") Poset poset) {
     int[][] transitiveReductionArray = poset.transitiveReduction().getArrayRepresentation();
-    for(int i=0; i<transitiveReductionArray.length; i++){
-      for(int j=0; j<transitiveReductionArray.length; j++){
-        if(transitiveReductionArray[i][j] == 1){
+    for (int i = 0; i < transitiveReductionArray.length; i++) {
+      for (int j = 0; j < transitiveReductionArray.length; j++) {
+        if (transitiveReductionArray[i][j] == 1) {
           transitiveReductionArray[i][j] = 0;
-          try{
+          try {
             Poset newPoset = new Poset(transitiveReductionArray);
-            if(newPoset.equals(poset)){
+            if (newPoset.equals(poset)) {
               return false;
             }
             transitiveReductionArray[i][j] = 1;
+          } catch (PosetException ignored) {
           }
-          catch (PosetException ignored){}
         }
       }
     }
     Statistics.collect(poset.getArrayRepresentation().length);
     return true;
-  }
-
-  @Provide
-  Arbitrary<Poset> posetGenerator() throws PosetException{
-    Random random = new Random();
-    return Arbitraries.integers().between(1,1000).flatMap(numRepetitions -> Arbitraries.integers().between(5, 10).map(size -> {
-      int[][] poset = new int[size][size];
-      for(int i=0; i<size; i++) {
-        //noinspection ConstantConditions
-        poset[i][i] = 1;
-        for(int j=i+1; j<size; j++) {
-          poset[i][j] = random.nextBoolean() ? 1 : 0;
-          poset[j][i] = poset[i][j] == 1 ? 0 : 1;
-        }
-      }
-      try {
-        return new Poset(poset);
-      } catch (PosetException e) {
-          return new Poset(new int[][]{{1}});
-      }
-    })
-      //Discard invalid posets
-      .filter(poset -> poset.getArrayRepresentation().length > 1));
-
   }
 
   /*
@@ -281,69 +246,30 @@ public class PosetTest {
     In general, NxN has 1+2+...+N-1 degrees of freedom, and by the formula of the arithmetic series:
     1+2+...+N-1 = N*(N-1)/2
    */
-  Arbitrary<Poset> posetGenerator2() throws PosetException{
-
-    IntegerArbitrary n_generator = Arbitraries.integers().between(3,4);
-    return n_generator
-      .map(n -> n*(n-1)/2)
-      .flatMap(repetitions -> Arbitraries.create(new MySupplier(repetitions)).map(permutation -> {
-        int[][] poset = new int[repetitions][repetitions];
-        int counter = 0;
-        for(int i=0; i<repetitions; i++){
-          poset[i][i] = 1;
-          for(int j=i+1; j<repetitions; j++){
-            poset[i][j] = permutation.get(counter++);
-            poset[j][i] = poset[i][j] == 1 ? 0 : 1;
+  @Provide
+  Arbitrary<Poset> posetGenerator() throws PosetException {
+    return Arbitraries.of(3,4,5,6)
+      .flatMap(n -> {
+        int degreesOfFreedom = n * (n - 1) / 2;
+        return new PermutationWithRepetitionArbitrary<>(java.util.Arrays.asList(0, 1), degreesOfFreedom).map(permutation -> {
+          int[][] poset = new int[n][n];
+          int counter = 0;
+          for (int i = 0; i < n; i++) {
+            poset[i][i] = 1;
+            for (int j = i + 1; j < n; j++) {
+              poset[i][j] = permutation.get(counter++);
+              poset[j][i] = poset[i][j] == 1 ? 0 : 1;
+            }
           }
-        }
-        try {
-          return new Poset(poset);
-        } catch (PosetException e) {
-          return new Poset(new int[][]{{1}});
-        }
-        }));
 
-//    IntegerArbitrary n_generator = Arbitraries.integers().between(3,4);
-//    return n_generator
-//      .map(n -> n*(n-1)/2)
-//      .map(repetitions -> {
-//      return new Permutation(repetitions).stream().map(permutation -> {
-//        int[][] poset = new int[repetitions][repetitions];
-//        int counter = 0;
-//        for(int i=0; i<repetitions; i++){
-//          poset[i][i] = 1;
-//          for(int j=i+1; j<repetitions; j++){
-//            poset[i][j] = permutation.get(counter++);
-//            poset[j][i] = poset[i][j] == 1 ? 0 : 1;
-//          }
-//        }
-//
-//        try {
-//          return new Poset(poset);
-//        } catch (PosetException e) {
-//          return new Poset(new int[][]{{1}});
-//        }
-//      })
-//    });
-
-
+          try {
+            return new Poset(poset);
+          } catch (PosetException e) {
+            return null;
+          }
+        })//Discard invalid posets
+          .filter(Objects::nonNull)
+          ;
+      });
   }
-
-  static class MySupplier implements Supplier<List<Integer>> {
-
-    int i;
-    int repetitions;
-    MySupplier(int repetitions) {
-      this.repetitions = repetitions;
-    };
-
-    @Override
-    public List<Integer> get() {
-      String permutation = String.format("%"+repetitions+"s" ,Integer.toBinaryString(i%repetitions)).replace(" ","0");
-      i++;
-      return permutation.chars().mapToObj(c -> Integer.valueOf(String.valueOf((char) c))).collect(Collectors.toList());
-    }
-  }
-
-
 }

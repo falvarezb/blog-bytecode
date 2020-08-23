@@ -210,17 +210,26 @@ public class PosetTest {
   }
 
   @Property(edgeCases = EdgeCasesMode.NONE)
+  @Label("for Posets of a given order, their transitive reduction contains the minimum possible number of binary relations")
+  /*
+    Demonstration: for a given Poset, remove its binary relations one at a time. If the resulting Poset after expansion
+    equals the original one, then we have found a representation of the Poset with 1 fewer binary relation than the
+    transitive reduction.
+   */
   boolean transitiveReductionContainsTheMinimumNumberOfBinaryRelations(@ForAll("posetGenerator") Poset poset) {
     int[][] transitiveReductionArray = poset.transitiveReduction().getArrayRepresentation();
     for (int i = 0; i < transitiveReductionArray.length; i++) {
       for (int j = 0; j < transitiveReductionArray.length; j++) {
         if (transitiveReductionArray[i][j] == 1) {
+          //remove 1 binary relation
           transitiveReductionArray[i][j] = 0;
           try {
+            //check if the resulting Poset equals the original one
             Poset newPoset = new Poset(transitiveReductionArray);
             if (newPoset.equals(poset)) {
               return false;
             }
+            //restore the binary relation
             transitiveReductionArray[i][j] = 1;
           } catch (PosetException ignored) {
           }

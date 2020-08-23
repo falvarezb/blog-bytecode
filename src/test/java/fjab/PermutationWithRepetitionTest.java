@@ -41,7 +41,7 @@ class PermutationWithRepetitionTest {
   @Label("test of 'randomPermutation'")
   class RandomPermutation {
     @Property
-    @Label("checking 4 random permutations for n=2, r=2")
+    @Label("checking 2^2 random permutations for n=2, r=2")
     public void testPermutation2_2(@ForAll @IntRange(min=1, max=4) int repetitions) {
       List<Integer> population = Arrays.asList(0, 1);
       int r = 2;
@@ -49,7 +49,7 @@ class PermutationWithRepetitionTest {
     }
 
     @Property
-    @Label("checking 32 random permutations for n=2, r=5")
+    @Label("checking 2^5 random permutations for n=2, r=5")
     public void testPermutation2_5(@ForAll @IntRange(min=1, max=32) int repetitions) {
       List<Integer> population = Arrays.asList(0, 1);
       int r = 5;

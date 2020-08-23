@@ -19,7 +19,7 @@ class PermutationWithRepetitionArbitraryTest {
   class RandomGeneratorTest {
 
     @Test
-    @DisplayName("random sample: n=2, r=2")
+    @DisplayName("random samples: n=2, r=2")
     public void randomPermutation_2_2() {
 
       //given
@@ -32,14 +32,15 @@ class PermutationWithRepetitionArbitraryTest {
       List<String> allPossiblePermutations = Arrays.asList("aa", "ab", "ba", "bb");
 
       //when
-      Stream<String> someSamples = arbitrary.sampleStream().limit(20).map(Util::listToString);
+      int numberSamples = (int) Math.pow(population.size(), r);
+      Stream<String> someSamples = arbitrary.sampleStream().limit(numberSamples).map(Util::listToString);
 
       //then
       assertThat(someSamples).allMatch(allPossiblePermutations::contains);
     }
 
     @Test
-    @DisplayName("random sample: n=2, r=3")
+    @DisplayName("random samples: n=2, r=3")
     public void randomPermutation_2_3() {
 
       //given
@@ -55,7 +56,8 @@ class PermutationWithRepetitionArbitraryTest {
       );
 
       //when
-      Stream<String> someSamples = arbitrary.sampleStream().limit(100).map(Util::listToString);
+      int numberSamples = (int) Math.pow(population.size(), r);
+      Stream<String> someSamples = arbitrary.sampleStream().limit(numberSamples).map(Util::listToString);
 
       //then
       assertThat(someSamples).allMatch(allPossiblePermutations::contains);
@@ -63,7 +65,7 @@ class PermutationWithRepetitionArbitraryTest {
 
 
     @Test
-    @DisplayName("random sample: n=3, r=2")
+    @DisplayName("random samples: n=3, r=2")
     public void randomPermutation_3_2() {
 
       //given
@@ -81,14 +83,15 @@ class PermutationWithRepetitionArbitraryTest {
       );
 
       //when
-      Stream<String> someSamples = arbitrary.sampleStream().limit(100).map(Util::listToString);
+      int numberSamples = (int) Math.pow(population.size(), r);
+      Stream<String> someSamples = arbitrary.sampleStream().limit(numberSamples).map(Util::listToString);
 
       //then
       assertThat(someSamples).allMatch(allPossiblePermutations::contains);
     }
 
     @Test
-    @DisplayName("random sample: n=3, r=3")
+    @DisplayName("random samples: n=3, r=3")
     public void randomPermutation_3_3() {
 
       //given
@@ -106,7 +109,8 @@ class PermutationWithRepetitionArbitraryTest {
       );
 
       //when
-      Stream<String> someSamples = arbitrary.sampleStream().limit(300).map(Util::listToString);
+      int numberSamples = (int) Math.pow(population.size(), r);
+      Stream<String> someSamples = arbitrary.sampleStream().limit(numberSamples).map(Util::listToString);
 
       //then
       assertThat(someSamples).allMatch(allPossiblePermutations::contains);
@@ -114,10 +118,9 @@ class PermutationWithRepetitionArbitraryTest {
   }
 
   @Nested
-  //all samples of r elements taken from a population of n elements with replacement
   class ExhaustiveGeneratorTest {
     @Test
-    @DisplayName("all samples: n=2, r=2")
+    @DisplayName("all permutations: n=2, r=2")
     public void allPermutations_2_2() {
 
       //given
@@ -134,7 +137,7 @@ class PermutationWithRepetitionArbitraryTest {
     }
 
     @Test
-    @DisplayName("all samples: n=2, r=3")
+    @DisplayName("all permutations: n=2, r=3")
     public void allPermutations_2_3() {
 
       //given
@@ -154,7 +157,7 @@ class PermutationWithRepetitionArbitraryTest {
     }
 
     @Test
-    @DisplayName("all samples: n=3, r=2")
+    @DisplayName("all permutations: n=3, r=2")
     public void allPermutations_3_2() {
 
       //given
@@ -175,7 +178,7 @@ class PermutationWithRepetitionArbitraryTest {
     }
 
     @Test
-    @DisplayName("all samples: n=3, r=3")
+    @DisplayName("all permutations: n=3, r=3")
     public void allPermutations_3_3() {
 
       //given

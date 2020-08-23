@@ -36,7 +36,7 @@ public class PermutationWithRepetitionArbitrary<T> implements Arbitrary<List<T>>
 
   @Override
   public EdgeCases<List<T>> edgeCases() {
-    return EdgeCases.fromSupplier(() -> Shrinkable.unshrinkable(population));
+    return EdgeCases.fromSupplier(() -> {throw new UnsupportedOperationException("There are no edge cases. Property should be configured with 'EdgeCasesMode.NONE'");});
   }
 
   static class PermutationWithRepetitionExhaustiveGenerator<T> implements ExhaustiveGenerator<List<T>> {

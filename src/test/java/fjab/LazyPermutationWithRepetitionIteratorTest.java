@@ -6,6 +6,9 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -14,7 +17,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class LazyPermutationWithRepetitionIteratorTest {
 
   @Test
-  @DisplayName("iteration over samples corresponding to: n=2, r=2")
+  @DisplayName("iteration over all permutations corresponding to: n=2, r=2")
   public void iteration_2_2() {
 
     //given
@@ -23,7 +26,7 @@ class LazyPermutationWithRepetitionIteratorTest {
       add("b");
     }};
     int r = 2;
-    List<List<String>> allSamples = Arrays.asList(
+    List<List<String>> allPossiblePermutations = Arrays.asList(
       Arrays.asList("a","a"),
       Arrays.asList("a","b"),
       Arrays.asList("b","a"),
@@ -32,15 +35,15 @@ class LazyPermutationWithRepetitionIteratorTest {
 
     //when
     LazyPermutationWithRepetitionIterator<String> iter = new LazyPermutationWithRepetitionIterator<>(population, r);
-    List<List<String>> results = new ArrayList<>();
-    iter.forEachRemaining(results::add);
+    List<List<String>> allValues = new ArrayList<>();
+    iter.forEachRemaining(allValues::add);
 
     //then
-    assertThat(allSamples).containsExactlyInAnyOrderElementsOf(results);
+    assertThat(allPossiblePermutations).containsExactlyInAnyOrderElementsOf(allValues);
   }
 
   @Test
-  @DisplayName("iteration over samples corresponding to: n=2, r=3")
+  @DisplayName("iteration over all permutations corresponding to: n=2, r=3")
   public void iteration_2_3() {
 
     //given
@@ -49,22 +52,22 @@ class LazyPermutationWithRepetitionIteratorTest {
       add("b");
     }};
     int r = 3;
-    List<List<String>> allSamples = Arrays.asList(
+    List<List<String>> allPossiblePermutations = Arrays.asList(
       Arrays.asList("a","a","a"),Arrays.asList("a","a","b"),Arrays.asList("a","b","a"),Arrays.asList("a","b","b"),
       Arrays.asList("b","a","a"),Arrays.asList("b","a","b"),Arrays.asList("b","b","a"),Arrays.asList("b","b","b")
     );
 
     //when
     LazyPermutationWithRepetitionIterator<String> iter = new LazyPermutationWithRepetitionIterator<>(population, r);
-    List<List<String>> results = new ArrayList<>();
-    iter.forEachRemaining(results::add);
+    List<List<String>> allValues = new ArrayList<>();
+    iter.forEachRemaining(allValues::add);
 
     //then
-    assertThat(allSamples).containsExactlyInAnyOrderElementsOf(results);
+    assertThat(allPossiblePermutations).containsExactlyInAnyOrderElementsOf(allValues);
   }
 
   @Test
-  @DisplayName("iteration over samples corresponding to: n=16, r=1")
+  @DisplayName("iteration over all permutations corresponding to: n=16, r=1")
   public void iteration_16_1() {
 
     //given
@@ -87,7 +90,7 @@ class LazyPermutationWithRepetitionIteratorTest {
       add("P");
     }};
     int r = 1;
-    List<List<String>> allSamples = Arrays.asList(
+    List<List<String>> allPossiblePermutations = Arrays.asList(
       singletonList("A"), singletonList("B"), singletonList("C"), singletonList("D"),
       singletonList("E"), singletonList("F"), singletonList("G"), singletonList("H"),
       singletonList("I"), singletonList("J"), singletonList("K"), singletonList("L"),
@@ -96,11 +99,11 @@ class LazyPermutationWithRepetitionIteratorTest {
 
     //when
     LazyPermutationWithRepetitionIterator<String> iter = new LazyPermutationWithRepetitionIterator<>(population, r);
-    List<List<String>> results = new ArrayList<>();
-    iter.forEachRemaining(results::add);
+    List<List<String>> allValues = new ArrayList<>();
+    iter.forEachRemaining(allValues::add);
 
     //then
-    assertThat(allSamples).containsExactlyInAnyOrderElementsOf(results);
+    assertThat(allPossiblePermutations).containsExactlyInAnyOrderElementsOf(allValues);
   }
 
   @Test
@@ -118,6 +121,38 @@ class LazyPermutationWithRepetitionIteratorTest {
     assertThatThrownBy(() -> new LazyPermutationWithRepetitionIterator<>(population, r))
       .isInstanceOf(IllegalArgumentException.class)
       .hasMessage("2 <= n <= 36");
+  }
+
+  @Test
+  @DisplayName("error when population length is greater than 36: n=37, r=1")
+  public void iteration_37_1() {
+
+    //given
+    List<Integer> population = IntStream.range(0,37).boxed().collect(Collectors.toList());
+    int r = 1;
+
+    //then
+    assertThatThrownBy(() -> new LazyPermutationWithRepetitionIterator<>(population, r))
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessage("2 <= n <= 36");
+  }
+
+  @Test
+  @DisplayName("error when trying to retrieve more elements after iterator is exhausted")
+  public void errorWhenIteratorExhausted() {
+
+    //given
+    List<Integer> population = Arrays.asList(1,2);
+    int r = 1;
+
+    //when
+    LazyPermutationWithRepetitionIterator<Integer> iter = new LazyPermutationWithRepetitionIterator<>(population, r);
+    iter.next();
+    iter.next();
+
+    //then
+    assertThatThrownBy(iter::next)
+      .isInstanceOf(NoSuchElementException.class);
   }
 
 }

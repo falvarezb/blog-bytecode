@@ -1,5 +1,6 @@
-package fjab;
+package fjab.iterator;
 
+import fjab.iterator.LazyPermutationWithRepetitionIterator;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 

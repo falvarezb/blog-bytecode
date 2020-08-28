@@ -1,5 +1,7 @@
 package fjab;
 
+import fjab.iterator.LazyPermutationWithRepetitionIterator;
+import fjab.iterator.PermutationWithRepetition;
 import net.jqwik.api.*;
 
 import java.util.Iterator;

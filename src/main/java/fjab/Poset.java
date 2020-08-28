@@ -1,5 +1,10 @@
 package fjab;
 
+import fjab.error.AntiSymmetryException;
+import fjab.error.InvalidPosetException;
+import fjab.error.PosetException;
+import fjab.error.ReflexivityException;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -215,7 +220,7 @@ public class Poset {
    *
    * @param array Internal representation of the Poset
    * @return Original array updated in place
-   * @throws InvalidPoset Thrown if transitive expansion is not possible
+   * @throws InvalidPosetException Thrown if transitive expansion is not possible
    */
   private int[][] transitiveExpansion(int[][] array) {
     //initialisation
@@ -247,7 +252,7 @@ public class Poset {
     try {
       checkReflexivityAndAntiSymmetryLaws(array);
     } catch (PosetException e) {
-      throw new InvalidPoset();
+      throw new InvalidPosetException();
     }
 
     return array;

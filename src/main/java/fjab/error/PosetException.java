@@ -1,4 +1,4 @@
-package fjab;
+package fjab.error;
 
 public class PosetException extends RuntimeException{
 }

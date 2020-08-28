@@ -1,5 +1,7 @@
 package fjab;
 
+import fjab.error.PosetException;
+
 import java.io.IOException;
 import java.nio.file.Paths;
 

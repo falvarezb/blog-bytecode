@@ -1,4 +1,4 @@
-package fjab;
+package fjab.iterator;
 
 import net.jqwik.api.*;
 import net.jqwik.api.constraints.IntRange;
@@ -8,8 +8,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static fjab.PermutationWithRepetition.allPermutations;
-import static fjab.PermutationWithRepetition.randomPermutation;
+import static fjab.iterator.PermutationWithRepetition.allPermutations;
+import static fjab.iterator.PermutationWithRepetition.randomPermutation;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 

@@ -1,5 +1,9 @@
 package fjab;
 
+import fjab.error.AntiSymmetryException;
+import fjab.error.InvalidPosetException;
+import fjab.error.PosetException;
+import fjab.error.ReflexivityException;
 import net.jqwik.api.*;
 import net.jqwik.api.statistics.Statistics;
 import org.junit.jupiter.api.DisplayName;
@@ -54,7 +58,7 @@ public class PosetTest {
     @Test
     @DisplayName("violation of antisymmetry rule after transitive expansion")
     public void testTransitivityExpansionFailure() {
-      assertThrows(InvalidPoset.class, () -> buildPosetFromFile(Paths.get("src/test/resources/poset_antisymmetry_rule_after_transitive_rule.txt")));
+      assertThrows(InvalidPosetException.class, () -> buildPosetFromFile(Paths.get("src/test/resources/poset_antisymmetry_rule_after_transitive_rule.txt")));
     }
 
     @Test

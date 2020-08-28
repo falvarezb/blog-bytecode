@@ -19,8 +19,6 @@ import java.util.Objects;
 import java.util.stream.Stream;
 
 import static fjab.Poset.buildPosetFromFile;
-import static fjab.TransitivityMode.TRANSITIVE_EXPANSION;
-import static fjab.TransitivityMode.TRANSITIVE_REDUCTION;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
@@ -41,7 +39,7 @@ public class PosetTest {
       {0, 1, 1, 0},
       {0, 0, 1, 0},
       {1, 1, 1, 1}
-    }, poset.getArrayRepresentation(TRANSITIVE_EXPANSION));
+    }, poset.getArrayExpanded());
 
     assertEquals(10, poset.getNumberOfExpandedBinaryRelations());
   }
@@ -113,8 +111,8 @@ public class PosetTest {
   @DisplayName("poset construction from a file")
   public void testBuildPosetFromFile(String fileName, int[][] array, int numBinaryRelations) throws IOException, PosetException {
     Poset poset = buildPosetFromFile(Paths.get(fileName));
-    assertArrayEquals(array, poset.getArrayRepresentation(TRANSITIVE_EXPANSION));
-    assertEquals(numBinaryRelations, poset.getNumberOfBinaryRelations(TRANSITIVE_EXPANSION));
+    assertArrayEquals(array, poset.getArrayExpanded());
+    assertEquals(numBinaryRelations, poset.getNumberOfExpandedBinaryRelations());
   }
 
   @ParameterizedTest
@@ -122,8 +120,8 @@ public class PosetTest {
   @DisplayName("transitive reduction")
   public void testTransitiveReduction(String fileName, int[][] array, int numBinaryRelations) throws IOException, PosetException {
     Poset poset = buildPosetFromFile(Paths.get(fileName));
-    assertArrayEquals(array, poset.getArrayRepresentation(TRANSITIVE_REDUCTION));
-    assertEquals(numBinaryRelations, poset.getNumberOfBinaryRelations(TRANSITIVE_REDUCTION));
+    assertArrayEquals(array, poset.getArrayReducted());
+    assertEquals(numBinaryRelations, poset.getNumberOfReductedBinaryRelations());
   }
 
   static Stream<Arguments> buildPosetFromFileSupplier() {

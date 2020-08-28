@@ -149,30 +149,12 @@ public class Poset {
     return Arrays.deepHashCode(arrayExpanded);
   }
 
-  public int[][] getArrayRepresentation(TransitivityMode transitivityMode) {
-    if(transitivityMode == TransitivityMode.TRANSITIVE_EXPANSION)
-      return Util.arrayDeepCopy(arrayExpanded);
-    else if(transitivityMode == TransitivityMode.TRANSITIVE_REDUCTION)
-      return Util.arrayDeepCopy(arrayReducted);
-    else
-      throw new IllegalArgumentException("Unknown transitive mode");
-  }
-
   public int getPosetOrder() {
     return posetOrder;
   }
 
   public int getNumberOfExpandedBinaryRelations() {
-    return getNumberOfBinaryRelations(TransitivityMode.TRANSITIVE_EXPANSION);
-  }
-
-  public int getNumberOfBinaryRelations(TransitivityMode transitivityMode) {
-    if(transitivityMode == TransitivityMode.TRANSITIVE_EXPANSION)
-      return numberOfExpandedBinaryRelations;
-    else if(transitivityMode == TransitivityMode.TRANSITIVE_REDUCTION)
-      return numberOfReductedBinaryRelations;
-    else
-      throw new IllegalArgumentException("Unknown transitive mode");
+    return numberOfExpandedBinaryRelations;
   }
 
   public String toString() {

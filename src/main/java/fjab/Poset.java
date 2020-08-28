@@ -69,22 +69,21 @@ import static java.util.stream.Collectors.toList;
  */
 public class Poset {
 
-  private final int[][] arrayExpanded;
-  private final int[][] arrayReducted;
+  private final int[][] expandedArray;
+  private final int[][] reducedArray;
   private final int numberOfExpandedBinaryRelations;
-  private final int numberOfReductedBinaryRelations;
+  private final int numberOfReducedBinaryRelations;
 
   public Poset(int[][] array) {
     if (Arrays.stream(array).flatMapToInt(Arrays::stream).filter(j -> j != 0 && j != 1).count() > 0) {
       throw new IllegalArgumentException("The Poset representation must contain the numbers 1 and 0 only");
     }
     checkReflexivityAndAntiSymmetryLaws(array);
-    this.arrayExpanded = transitiveExpansion(array);
-    this.arrayReducted = transitiveReduction();
-    assert arrayExpanded.length == arrayReducted.length;
+    this.expandedArray = transitiveExpansion(array);
+    this.reducedArray = transitiveReduction();
 
-    this.numberOfExpandedBinaryRelations = Util.sum(this.arrayExpanded);
-    this.numberOfReductedBinaryRelations = Util.sum(this.arrayReducted);
+    this.numberOfExpandedBinaryRelations = Util.sum(this.expandedArray);
+    this.numberOfReducedBinaryRelations = Util.sum(this.reducedArray);
   }
 
   /**
@@ -122,16 +121,16 @@ public class Poset {
     }
   }
 
-  public int[][] getArrayExpanded() {
-    return arrayExpanded;
+  public int[][] getExpandedArray() {
+    return expandedArray;
   }
 
-  public int[][] getArrayReducted() {
-    return arrayReducted;
+  public int[][] getReducedArray() {
+    return reducedArray;
   }
 
-  public int getNumberOfReductedBinaryRelations() {
-    return numberOfReductedBinaryRelations;
+  public int getNumberOfReducedBinaryRelations() {
+    return numberOfReducedBinaryRelations;
   }
 
   @Override
@@ -139,12 +138,12 @@ public class Poset {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     Poset poset = (Poset) o;
-    return Arrays.deepEquals(arrayExpanded, poset.arrayExpanded);
+    return Arrays.deepEquals(expandedArray, poset.expandedArray);
   }
 
   @Override
   public int hashCode() {
-    return Arrays.deepHashCode(arrayExpanded);
+    return Arrays.deepHashCode(expandedArray);
   }
 
   public int getNumberOfExpandedBinaryRelations() {
@@ -153,7 +152,7 @@ public class Poset {
 
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    for (int[] ints : arrayExpanded) {
+    for (int[] ints : expandedArray) {
       for (int anInt : ints) {
         sb.append(" ").append(anInt);
       }
@@ -167,12 +166,12 @@ public class Poset {
    * the transitive reduction (https://en.wikipedia.org/wiki/Transitive_reduction) of this
    */
   private int[][] transitiveReduction() {
-    int[][] newArray = Util.arrayDeepCopy(arrayExpanded);
-    for (int i = 0; i < arrayExpanded.length; i++) {
-      for (int j = 0; j < arrayExpanded[i].length; j++) {
-        if (i != j && arrayExpanded[i][j] == 1) {
-          for (int k = 0; k < arrayExpanded[j].length; k++) {
-            if (j != k && arrayExpanded[j][k] == 1) {
+    int[][] newArray = Util.arrayDeepCopy(expandedArray);
+    for (int i = 0; i < expandedArray.length; i++) {
+      for (int j = 0; j < expandedArray[i].length; j++) {
+        if (i != j && expandedArray[i][j] == 1) {
+          for (int k = 0; k < expandedArray[j].length; k++) {
+            if (j != k && expandedArray[j][k] == 1) {
               newArray[i][k] = 0;
             }
           }
@@ -243,9 +242,9 @@ public class Poset {
    */
   public int[] sort() {
     //initialisation
-    AuxRowForSort[] rows = new AuxRowForSort[arrayExpanded.length];
-    for (int i = 0; i < arrayExpanded.length; i++) {
-      rows[i] = new AuxRowForSort(arrayExpanded[i], i);
+    AuxRowForSort[] rows = new AuxRowForSort[expandedArray.length];
+    for (int i = 0; i < expandedArray.length; i++) {
+      rows[i] = new AuxRowForSort(expandedArray[i], i);
     }
 
     Arrays.sort(rows, (o1, o2) -> o2.numberOfBinaryRelations - o1.numberOfBinaryRelations);

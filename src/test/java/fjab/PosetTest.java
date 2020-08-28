@@ -24,26 +24,6 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 public class PosetTest {
 
-  @Test
-  @DisplayName("poset construction from an array")
-  public void testBuildPosetFromArray() throws PosetException {
-    int[][] array = new int[][]{
-      {1, 1, 0, 0},
-      {0, 1, 1, 0},
-      {0, 0, 1, 0},
-      {1, 0, 0, 1}
-    };
-    Poset poset = new Poset(array);
-    assertArrayEquals(new int[][]{
-      {1, 1, 1, 0},
-      {0, 1, 1, 0},
-      {0, 0, 1, 0},
-      {1, 1, 1, 1}
-    }, poset.getArrayExpanded());
-
-    assertEquals(10, poset.getNumberOfExpandedBinaryRelations());
-  }
-
   @Nested
   @DisplayName("invalid poset")
   class InvalidPosetTest {
@@ -107,9 +87,9 @@ public class PosetTest {
   }
 
   @ParameterizedTest
-  @MethodSource("buildPosetFromFileSupplier")
-  @DisplayName("poset construction from a file")
-  public void testBuildPosetFromFile(String fileName, int[][] array, int numBinaryRelations) throws IOException, PosetException {
+  @MethodSource("transitiveExpansionSupplier")
+  @DisplayName("transitive expansion")
+  public void testTransitiveExpansion(String fileName, int[][] array, int numBinaryRelations) throws IOException, PosetException {
     Poset poset = buildPosetFromFile(Paths.get(fileName));
     assertArrayEquals(array, poset.getArrayExpanded());
     assertEquals(numBinaryRelations, poset.getNumberOfExpandedBinaryRelations());
@@ -124,7 +104,7 @@ public class PosetTest {
     assertEquals(numBinaryRelations, poset.getNumberOfReductedBinaryRelations());
   }
 
-  static Stream<Arguments> buildPosetFromFileSupplier() {
+  static Stream<Arguments> transitiveExpansionSupplier() {
     return Stream.of(
       arguments("src/test/resources/poset_success_1.txt", new int[][]{
         {1, 1, 1, 0},
@@ -197,14 +177,14 @@ public class PosetTest {
   @Label("TE(TR(TE(arr))) == TE(arr)")
   void transitiveExpansionAndReductionAreInverseOfEachOther(@ForAll("posetGenerator") Poset poset) {
     assertArrayEquals(new Poset(new Poset(poset.getArrayExpanded()).getArrayReducted()).getArrayExpanded(), poset.getArrayExpanded());
-    Statistics.collect(poset.getArrayExpanded().length, poset.getPosetOrder());
+    Statistics.collect(poset.getArrayExpanded().length);
   }
 
   @Property(edgeCases = EdgeCasesMode.NONE)
   @Label("Num(TR(arr)) <= Num(TE(arr))")
   void numberOfBinaryRelationsOfTransitiveReductionIsEqualOrLessThanTransitiveExpansion(@ForAll("posetGenerator") Poset poset) {
     assertTrue(poset.getNumberOfReductedBinaryRelations() <= poset.getNumberOfExpandedBinaryRelations());
-    Statistics.collect(poset.getArrayExpanded().length, poset.getPosetOrder());
+    Statistics.collect(poset.getArrayExpanded().length);
   }
 
   @Property(edgeCases = EdgeCasesMode.NONE)
@@ -234,7 +214,7 @@ public class PosetTest {
         }
       }
     }
-    Statistics.collect(poset.getArrayExpanded().length, poset.getPosetOrder());
+    Statistics.collect(poset.getArrayExpanded().length);
     return true;
   }
 

@@ -73,7 +73,6 @@ public class Poset {
   private final int[][] arrayReducted;
   private final int numberOfExpandedBinaryRelations;
   private final int numberOfReductedBinaryRelations;
-  private final int posetOrder;
 
   public Poset(int[][] array) {
     if (Arrays.stream(array).flatMapToInt(Arrays::stream).filter(j -> j != 0 && j != 1).count() > 0) {
@@ -86,7 +85,6 @@ public class Poset {
 
     this.numberOfExpandedBinaryRelations = Util.sum(this.arrayExpanded);
     this.numberOfReductedBinaryRelations = Util.sum(this.arrayReducted);
-    this.posetOrder = numberOfReductedBinaryRelations - arrayReducted.length;
   }
 
   /**
@@ -147,10 +145,6 @@ public class Poset {
   @Override
   public int hashCode() {
     return Arrays.deepHashCode(arrayExpanded);
-  }
-
-  public int getPosetOrder() {
-    return posetOrder;
   }
 
   public int getNumberOfExpandedBinaryRelations() {

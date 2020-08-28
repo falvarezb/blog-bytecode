@@ -1,6 +1,5 @@
 package fjab;
 
-
 import net.jqwik.api.*;
 import net.jqwik.api.statistics.Statistics;
 import org.junit.jupiter.api.DisplayName;
@@ -38,10 +37,9 @@ public class PosetTest {
       {0, 1, 1, 0},
       {0, 0, 1, 0},
       {1, 1, 1, 1}
-    }, poset.getArrayRepresentation());
+    }, poset.getArrayRepresentation(TRANSITIVE_EXPANSION));
 
-    assertEquals(10, poset.getNumberOfBinaryRelations());
-    assertEquals(TRANSITIVE_EXPANSION, poset.getTransitivityMode());
+    assertEquals(10, poset.getNumberOfExpandedBinaryRelations());
   }
 
   @Nested
@@ -73,7 +71,7 @@ public class PosetTest {
     @DisplayName("illegal chars in file: non-numeric char")
     public void testBuildPosetFromFileWithIllegalChars() {
       Exception e = assertThrows(IllegalArgumentException.class, () -> buildPosetFromFile(Paths.get("src/test/resources/illegal_non_numeric_in_file.txt")));
-      assertEquals("The Poset representation must contain the numbers 1 and 0 only", e.getMessage());
+      assertEquals("The Poset representation cannot have non-numeric chars", e.getMessage());
     }
 
     @Test
@@ -109,21 +107,19 @@ public class PosetTest {
   @ParameterizedTest
   @MethodSource("buildPosetFromFileSupplier")
   @DisplayName("poset construction from a file")
-  public void testBuildPosetFromFile(String fileName, int[][] array, int numBinaryRelations, TransitivityMode transitivityMode) throws IOException, PosetException {
+  public void testBuildPosetFromFile(String fileName, int[][] array, int numBinaryRelations) throws IOException, PosetException {
     Poset poset = buildPosetFromFile(Paths.get(fileName));
-    assertArrayEquals(array, poset.getArrayRepresentation());
-    assertEquals(numBinaryRelations, poset.getNumberOfBinaryRelations());
-    assertEquals(transitivityMode, poset.getTransitivityMode());
+    assertArrayEquals(array, poset.getArrayRepresentation(TRANSITIVE_EXPANSION));
+    assertEquals(numBinaryRelations, poset.getNumberOfBinaryRelations(TRANSITIVE_EXPANSION));
   }
 
   @ParameterizedTest
   @MethodSource("transitiveReductionSupplier")
   @DisplayName("transitive reduction")
-  public void testTransitiveReduction(String fileName, int[][] array, int numBinaryRelations, TransitivityMode transitivityMode) throws IOException, PosetException {
-    Poset poset = buildPosetFromFile(Paths.get(fileName)).transitiveReduction();
-    assertArrayEquals(array, poset.getArrayRepresentation());
-    assertEquals(numBinaryRelations, poset.getNumberOfBinaryRelations());
-    assertEquals(transitivityMode, poset.getTransitivityMode());
+  public void testTransitiveReduction(String fileName, int[][] array, int numBinaryRelations) throws IOException, PosetException {
+    Poset poset = buildPosetFromFile(Paths.get(fileName));
+    assertArrayEquals(array, poset.getArrayRepresentation(TRANSITIVE_REDUCTION));
+    assertEquals(numBinaryRelations, poset.getNumberOfBinaryRelations(TRANSITIVE_REDUCTION));
   }
 
   static Stream<Arguments> buildPosetFromFileSupplier() {
@@ -133,7 +129,7 @@ public class PosetTest {
         {0, 1, 1, 0},
         {0, 0, 1, 0},
         {1, 1, 1, 1}
-      }, 10, TRANSITIVE_EXPANSION),
+      }, 10),
       arguments("src/test/resources/poset_success_2.txt", new int[][]{
         {1, 0, 0, 1, 0, 1, 1, 1},
         {0, 1, 0, 1, 1, 1, 1, 1},
@@ -143,14 +139,14 @@ public class PosetTest {
         {0, 0, 0, 0, 0, 1, 0, 0},
         {0, 0, 0, 0, 0, 0, 1, 0},
         {0, 0, 0, 0, 0, 0, 0, 1}
-      }, 24, TRANSITIVE_EXPANSION),
+      }, 24),
       arguments("src/test/resources/poset_success_3.txt", new int[][]{
         {1, 0, 0, 0, 0},
         {1, 1, 0, 0, 0},
         {1, 1, 1, 0, 0},
         {1, 1, 1, 1, 0},
         {1, 1, 1, 1, 1}
-      }, 15, TRANSITIVE_EXPANSION)
+      }, 15)
     );
   }
 
@@ -161,7 +157,7 @@ public class PosetTest {
         {0, 1, 1, 0},
         {0, 0, 1, 0},
         {1, 0, 0, 1}
-      }, 7, TRANSITIVE_REDUCTION),
+      }, 7),
       arguments("src/test/resources/poset_success_2.txt", new int[][]{
         {1, 0, 0, 1, 0, 0, 0, 0},
         {0, 1, 0, 1, 1, 0, 0, 0},
@@ -171,14 +167,14 @@ public class PosetTest {
         {0, 0, 0, 0, 0, 1, 0, 0},
         {0, 0, 0, 0, 0, 0, 1, 0},
         {0, 0, 0, 0, 0, 0, 0, 1}
-      }, 17, TRANSITIVE_REDUCTION),
+      }, 17),
       arguments("src/test/resources/poset_success_3.txt", new int[][]{
         {1, 0, 0, 0, 0},
         {1, 1, 0, 0, 0},
         {0, 1, 1, 0, 0},
         {0, 0, 1, 1, 0},
         {0, 0, 0, 1, 1}
-      }, 9, TRANSITIVE_REDUCTION)
+      }, 9)
     );
   }
 
@@ -198,15 +194,15 @@ public class PosetTest {
   @Property(edgeCases = EdgeCasesMode.NONE)
   @Label("TE(TR(TE(arr))) == TE(arr)")
   void transitiveExpansionAndReductionAreInverseOfEachOther(@ForAll("posetGenerator") Poset poset) {
-    assertArrayEquals(new Poset(poset.transitiveReduction().getArrayRepresentation()).getArrayRepresentation(), poset.getArrayRepresentation());
-    Statistics.collect(poset.getArrayRepresentation().length);
+    assertArrayEquals(new Poset(new Poset(poset.getArrayExpanded()).getArrayReducted()).getArrayExpanded(), poset.getArrayExpanded());
+    Statistics.collect(poset.getArrayExpanded().length, poset.getPosetOrder());
   }
 
   @Property(edgeCases = EdgeCasesMode.NONE)
-  @Label("Num(TR(TE(arr))) <= Num(TE(arr))")
+  @Label("Num(TR(arr)) <= Num(TE(arr))")
   void numberOfBinaryRelationsOfTransitiveReductionIsEqualOrLessThanTransitiveExpansion(@ForAll("posetGenerator") Poset poset) {
-    assertTrue(poset.transitiveReduction().getNumberOfBinaryRelations() <= poset.getNumberOfBinaryRelations());
-    Statistics.collect(poset.getArrayRepresentation().length);
+    assertTrue(poset.getNumberOfReductedBinaryRelations() <= poset.getNumberOfExpandedBinaryRelations());
+    Statistics.collect(poset.getArrayExpanded().length, poset.getPosetOrder());
   }
 
   @Property(edgeCases = EdgeCasesMode.NONE)
@@ -217,7 +213,7 @@ public class PosetTest {
     transitive reduction.
    */
   boolean transitiveReductionContainsTheMinimumNumberOfBinaryRelations(@ForAll("posetGenerator") Poset poset) {
-    int[][] transitiveReductionArray = poset.transitiveReduction().getArrayRepresentation();
+    int[][] transitiveReductionArray = poset.getArrayReducted();
     for (int i = 0; i < transitiveReductionArray.length; i++) {
       for (int j = 0; j < transitiveReductionArray.length; j++) {
         if (transitiveReductionArray[i][j] == 1) {
@@ -236,7 +232,7 @@ public class PosetTest {
         }
       }
     }
-    Statistics.collect(poset.getArrayRepresentation().length);
+    Statistics.collect(poset.getArrayExpanded().length, poset.getPosetOrder());
     return true;
   }
 

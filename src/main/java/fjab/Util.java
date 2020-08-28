@@ -1,5 +1,6 @@
 package fjab;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -43,5 +44,20 @@ public class Util {
    */
   public static String listToString(List<String> list) {
     return list.stream().reduce("", (a, b) -> a + b);
+  }
+
+  public static int[][] arrayDeepCopy(int[][] array) {
+    int[][] newArray = new int[array.length][];
+    for (int j = 0; j < array.length; j++) {
+      newArray[j] = Arrays.copyOf(array[j], array[j].length);
+    }
+    return newArray;
+  }
+
+  /**
+   * Returns the sum of all elements in the given array
+   */
+  public static int sum(int[][] p) {
+    return Arrays.stream(p).flatMapToInt(Arrays::stream).sum();
   }
 }

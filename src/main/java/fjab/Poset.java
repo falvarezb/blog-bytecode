@@ -7,8 +7,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static fjab.TransitivityMode.TRANSITIVE_EXPANSION;
-import static fjab.TransitivityMode.TRANSITIVE_REDUCTION;
 import static java.util.stream.Collectors.toList;
 
 /**
@@ -66,26 +64,24 @@ import static java.util.stream.Collectors.toList;
  */
 public class Poset {
 
-  private final int[][] array;
-  private final int numberOfBinaryRelations;
-  //private final int posetOrder;
-  private final TransitivityMode transitivityMode;
-  public Poset(int[][] array) throws PosetException {
-    this(arrayDeepCopy(array), TRANSITIVE_EXPANSION);
-  }
-  private Poset(int[][] array, TransitivityMode transitivityMode) {
-    if (transitivityMode == TRANSITIVE_EXPANSION) {
-      if (Arrays.stream(array).flatMapToInt(Arrays::stream).filter(j -> j != 0 && j != 1).count() > 0) {
-        throw new IllegalArgumentException("The Poset representation must contain the numbers 1 and 0 only");
-      }
-      checkReflexivityAndAntiSymmetryLaws(array);
-      this.array = transitiveExpansion(array);
-    } else {
-      this.array = array;
+  private final int[][] arrayExpanded;
+  private final int[][] arrayReducted;
+  private final int numberOfExpandedBinaryRelations;
+  private final int numberOfReductedBinaryRelations;
+  private final int posetOrder;
+
+  public Poset(int[][] array) {
+    if (Arrays.stream(array).flatMapToInt(Arrays::stream).filter(j -> j != 0 && j != 1).count() > 0) {
+      throw new IllegalArgumentException("The Poset representation must contain the numbers 1 and 0 only");
     }
-    this.numberOfBinaryRelations = Arrays.stream(this.array).flatMapToInt(Arrays::stream).sum();
-    //this.posetOrder = numberOfBinaryRelations - array.length;
-    this.transitivityMode = transitivityMode;
+    checkReflexivityAndAntiSymmetryLaws(array);
+    this.arrayExpanded = transitiveExpansion(array);
+    this.arrayReducted = transitiveReduction();
+    assert arrayExpanded.length == arrayReducted.length;
+
+    this.numberOfExpandedBinaryRelations = Util.sum(this.arrayExpanded);
+    this.numberOfReductedBinaryRelations = Util.sum(this.arrayReducted);
+    this.posetOrder = numberOfReductedBinaryRelations - arrayReducted.length;
   }
 
   /**
@@ -104,9 +100,9 @@ public class Poset {
     try {
       lines.stream().map(line -> Arrays.stream(line.split(" ")).mapToInt(Integer::parseInt).toArray()).collect(toList()).toArray(array);
     } catch (NumberFormatException e) {
-      throw new IllegalArgumentException("The Poset representation must contain the numbers 1 and 0 only");
+      throw new IllegalArgumentException("The Poset representation cannot have non-numeric chars");
     }
-    return new Poset(array, TRANSITIVE_EXPANSION);
+    return new Poset(array);
 
   }
 
@@ -123,12 +119,16 @@ public class Poset {
     }
   }
 
-  private static int[][] arrayDeepCopy(int[][] array) {
-    int[][] newArray = new int[array.length][];
-    for (int j = 0; j < array.length; j++) {
-      newArray[j] = Arrays.copyOf(array[j], array[j].length);
-    }
-    return newArray;
+  public int[][] getArrayExpanded() {
+    return arrayExpanded;
+  }
+
+  public int[][] getArrayReducted() {
+    return arrayReducted;
+  }
+
+  public int getNumberOfReductedBinaryRelations() {
+    return numberOfReductedBinaryRelations;
   }
 
   @Override
@@ -136,29 +136,43 @@ public class Poset {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     Poset poset = (Poset) o;
-    return Arrays.deepEquals(array, poset.array);
+    return Arrays.deepEquals(arrayExpanded, poset.arrayExpanded);
   }
 
   @Override
   public int hashCode() {
-    return Arrays.deepHashCode(array);
+    return Arrays.deepHashCode(arrayExpanded);
   }
 
-  public int[][] getArrayRepresentation() {
-    return arrayDeepCopy(array);
+  public int[][] getArrayRepresentation(TransitivityMode transitivityMode) {
+    if(transitivityMode == TransitivityMode.TRANSITIVE_EXPANSION)
+      return Util.arrayDeepCopy(arrayExpanded);
+    else if(transitivityMode == TransitivityMode.TRANSITIVE_REDUCTION)
+      return Util.arrayDeepCopy(arrayReducted);
+    else
+      throw new IllegalArgumentException("Unknown transitive mode");
   }
 
-  public int getNumberOfBinaryRelations() {
-    return numberOfBinaryRelations;
+  public int getPosetOrder() {
+    return posetOrder;
   }
 
-  public TransitivityMode getTransitivityMode() {
-    return transitivityMode;
+  public int getNumberOfExpandedBinaryRelations() {
+    return getNumberOfBinaryRelations(TransitivityMode.TRANSITIVE_EXPANSION);
+  }
+
+  public int getNumberOfBinaryRelations(TransitivityMode transitivityMode) {
+    if(transitivityMode == TransitivityMode.TRANSITIVE_EXPANSION)
+      return numberOfExpandedBinaryRelations;
+    else if(transitivityMode == TransitivityMode.TRANSITIVE_REDUCTION)
+      return numberOfReductedBinaryRelations;
+    else
+      throw new IllegalArgumentException("Unknown transitive mode");
   }
 
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    for (int[] ints : array) {
+    for (int[] ints : arrayExpanded) {
       for (int anInt : ints) {
         sb.append(" ").append(anInt);
       }
@@ -171,20 +185,20 @@ public class Poset {
    * Returns a new Poset whose internal representation is
    * the transitive reduction (https://en.wikipedia.org/wiki/Transitive_reduction) of this
    */
-  public Poset transitiveReduction() {
-    int[][] newArray = arrayDeepCopy(array);
-    for (int i = 0; i < array.length; i++) {
-      for (int j = 0; j < array[i].length; j++) {
-        if (i != j && array[i][j] == 1) {
-          for (int k = 0; k < array[j].length; k++) {
-            if (j != k && array[j][k] == 1) {
+  private int[][] transitiveReduction() {
+    int[][] newArray = Util.arrayDeepCopy(arrayExpanded);
+    for (int i = 0; i < arrayExpanded.length; i++) {
+      for (int j = 0; j < arrayExpanded[i].length; j++) {
+        if (i != j && arrayExpanded[i][j] == 1) {
+          for (int k = 0; k < arrayExpanded[j].length; k++) {
+            if (j != k && arrayExpanded[j][k] == 1) {
               newArray[i][k] = 0;
             }
           }
         }
       }
     }
-    return new Poset(newArray, TRANSITIVE_REDUCTION);
+    return newArray;
   }
 
   /**
@@ -247,13 +261,10 @@ public class Poset {
    * @return Array of sorted labels
    */
   public int[] sort() {
-    if (this.transitivityMode != TRANSITIVE_EXPANSION) {
-      throw new UnsupportedOperationException("Transitive expansion of the Poset is required");
-    }
     //initialisation
-    AuxRowForSort[] rows = new AuxRowForSort[array.length];
-    for (int i = 0; i < array.length; i++) {
-      rows[i] = new AuxRowForSort(array[i], i);
+    AuxRowForSort[] rows = new AuxRowForSort[arrayExpanded.length];
+    for (int i = 0; i < arrayExpanded.length; i++) {
+      rows[i] = new AuxRowForSort(arrayExpanded[i], i);
     }
 
     Arrays.sort(rows, (o1, o2) -> o2.numberOfBinaryRelations - o1.numberOfBinaryRelations);

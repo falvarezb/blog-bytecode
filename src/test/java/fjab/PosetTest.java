@@ -53,19 +53,19 @@ public class PosetTest {
     @DisplayName("illegal chars in file: non-numeric char")
     public void testBuildPosetFromFileWithIllegalChars() {
       Exception e = assertThrows(IllegalArgumentException.class, () -> buildPosetFromFile(Paths.get("src/test/resources/illegal_non_numeric_in_file.txt")));
-      assertEquals("The Poset representation cannot have non-numeric chars", e.getMessage());
+      assertEquals("The file cannot have non-numeric chars", e.getMessage());
     }
 
     @Test
     @DisplayName("illegal chars in file: number other than 0 or 1")
     public void testBuildPosetFromFileWithIllegalChars_2() {
       Exception e = assertThrows(IllegalArgumentException.class, () -> buildPosetFromFile(Paths.get("src/test/resources/illegal_number_in_file.txt")));
-      assertEquals("The Poset representation must contain the numbers 1 and 0 only", e.getMessage());
+      assertEquals("The binary relations representation must contain the numbers 1 and 0 only", e.getMessage());
     }
 
     @Test
     @DisplayName("illegal elements in array: number other than 0 or 1")
-    public void testBuildPosetFromArrayWithIllegalChars_2() {
+    public void testBuildPosetFromArrayWithIllegalChars() {
 
       Exception e = assertThrows(IllegalArgumentException.class, () -> new Poset(new int[][]{
         {5, 1, 1, 0},
@@ -73,7 +73,75 @@ public class PosetTest {
         {0, 0, 1, 0},
         {1, 1, 1, 1}
       }));
-      assertEquals("The Poset representation must contain the numbers 1 and 0 only", e.getMessage());
+      assertEquals("The binary relations representation must contain the numbers 1 and 0 only", e.getMessage());
+    }
+
+    @Test
+    @DisplayName("illegal array dimensions: it must be a square matrix")
+    public void testBuildPosetFromArrayWithIllegalDimensions() {
+
+      Exception e = assertThrows(IllegalArgumentException.class, () -> new Poset(new int[][]{
+        {1, 1, 0}
+      }));
+      assertEquals("the array must be a NxN matrix, where N is the number of elements", e.getMessage());
+    }
+  }
+
+  @Nested
+  @DisplayName("equality test")
+  class EqualityTest {
+    @Test
+    @DisplayName("2 Posets with the same constructor parameters are equal")
+    public void testEqualPosetsWithSameConstructorParameters() {
+      Poset poset1 = new Poset(new int[][]{
+        {1, 1, 1, 0},
+        {0, 1, 1, 0},
+        {0, 0, 1, 0},
+        {1, 1, 1, 1}
+      });
+      Poset poset2 = new Poset(new int[][]{
+        {1, 1, 1, 0},
+        {0, 1, 1, 0},
+        {0, 0, 1, 0},
+        {1, 1, 1, 1}
+      });
+      assertEquals(poset1, poset2);
+    }
+
+    @Test
+    @DisplayName("2 Posets are equal if they have the same transitive expansion")
+    public void testEqualPosetsWithSameTransitiveExpansion() {
+      Poset poset1 = new Poset(new int[][]{
+        {1, 1, 1, 0},
+        {0, 1, 1, 0},
+        {0, 0, 1, 0},
+        {1, 1, 1, 1}
+      });
+      Poset poset2 = new Poset(new int[][]{
+        {1, 1, 0, 0},
+        {0, 1, 1, 0},
+        {0, 0, 1, 0},
+        {1, 0, 0, 1}
+      });
+      assertEquals(poset1, poset2);
+    }
+
+    @Test
+    @DisplayName("2 Posets with different transitive expansion are not equal")
+    public void testPosetsWithDifferentTransitiveExpansion() {
+      Poset poset1 = new Poset(new int[][]{
+        {1, 1, 1, 0},
+        {0, 1, 1, 0},
+        {0, 0, 1, 0},
+        {1, 1, 1, 1}
+      });
+      Poset poset2 = new Poset(new int[][]{
+        {1, 1, 1, 0},
+        {0, 1, 0, 0},
+        {0, 0, 1, 0},
+        {1, 1, 1, 1}
+      });
+      assertNotEquals(poset1, poset2);
     }
   }
 

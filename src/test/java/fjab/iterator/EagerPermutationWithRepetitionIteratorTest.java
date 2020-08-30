@@ -32,9 +32,9 @@ class EagerPermutationWithRepetitionIteratorTest {
     );
 
     //when
-    EagerPermutationWithRepetitionIterator<String> iter = new EagerPermutationWithRepetitionIterator<>(population, r);
+    EagerPermutationWithRepetitionIterator<String> iterator = new EagerPermutationWithRepetitionIterator<>(population, r);
     List<List<String>> allValues = new ArrayList<>();
-    iter.forEachRemaining(allValues::add);
+    iterator.forEachRemaining(allValues::add);
 
     //then
     assertThat(allPossiblePermutations).containsExactlyInAnyOrderElementsOf(allValues);
@@ -56,9 +56,9 @@ class EagerPermutationWithRepetitionIteratorTest {
     );
 
     //when
-    EagerPermutationWithRepetitionIterator<String> iter = new EagerPermutationWithRepetitionIterator<>(population, r);
+    EagerPermutationWithRepetitionIterator<String> iterator = new EagerPermutationWithRepetitionIterator<>(population, r);
     List<List<String>> allValues = new ArrayList<>();
-    iter.forEachRemaining(allValues::add);
+    iterator.forEachRemaining(allValues::add);
 
     //then
     assertThat(allPossiblePermutations).containsExactlyInAnyOrderElementsOf(allValues);
@@ -96,9 +96,9 @@ class EagerPermutationWithRepetitionIteratorTest {
     );
 
     //when
-    EagerPermutationWithRepetitionIterator<String> iter = new EagerPermutationWithRepetitionIterator<>(population, r);
+    EagerPermutationWithRepetitionIterator<String> iterator = new EagerPermutationWithRepetitionIterator<>(population, r);
     List<List<String>> allValues = new ArrayList<>();
-    iter.forEachRemaining(allValues::add);
+    iterator.forEachRemaining(allValues::add);
 
     //then
     assertThat(allPossiblePermutations).isEqualTo(allValues);
@@ -113,12 +113,12 @@ class EagerPermutationWithRepetitionIteratorTest {
     int r = 1;
 
     //when
-    EagerPermutationWithRepetitionIterator<Integer> iter = new EagerPermutationWithRepetitionIterator<>(population, r);
-    iter.next();
-    iter.next();
+    EagerPermutationWithRepetitionIterator<Integer> iterator = new EagerPermutationWithRepetitionIterator<>(population, r);
+    iterator.next();
+    iterator.next();
 
     //then
-    assertThatThrownBy(iter::next)
+    assertThatThrownBy(iterator::next)
       .isInstanceOf(NoSuchElementException.class);
   }
 

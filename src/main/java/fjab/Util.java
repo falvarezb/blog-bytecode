@@ -57,7 +57,11 @@ public class Util {
   /**
    * Returns the sum of all elements in the given array
    */
-  public static int sum(int[][] p) {
-    return Arrays.stream(p).flatMapToInt(Arrays::stream).sum();
+  public static int sum(int[][] arr) {
+    return Arrays.stream(arr).flatMapToInt(Arrays::stream).sum();
+  }
+
+  public static boolean isSquareMatrix(int[][] arr) {
+    return Arrays.stream(arr).mapToInt(row -> row.length).filter(size -> size != arr.length).toArray().length == 0;
   }
 }

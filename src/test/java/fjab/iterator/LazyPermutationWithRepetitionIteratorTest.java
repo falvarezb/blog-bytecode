@@ -1,6 +1,5 @@
 package fjab.iterator;
 
-import fjab.iterator.LazyPermutationWithRepetitionIterator;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -35,9 +34,9 @@ class LazyPermutationWithRepetitionIteratorTest {
     );
 
     //when
-    LazyPermutationWithRepetitionIterator<String> iter = new LazyPermutationWithRepetitionIterator<>(population, r);
+    LazyPermutationWithRepetitionIterator<String> iterator = new LazyPermutationWithRepetitionIterator<>(population, r);
     List<List<String>> allValues = new ArrayList<>();
-    iter.forEachRemaining(allValues::add);
+    iterator.forEachRemaining(allValues::add);
 
     //then
     assertThat(allPossiblePermutations).containsExactlyInAnyOrderElementsOf(allValues);
@@ -59,9 +58,9 @@ class LazyPermutationWithRepetitionIteratorTest {
     );
 
     //when
-    LazyPermutationWithRepetitionIterator<String> iter = new LazyPermutationWithRepetitionIterator<>(population, r);
+    LazyPermutationWithRepetitionIterator<String> iterator = new LazyPermutationWithRepetitionIterator<>(population, r);
     List<List<String>> allValues = new ArrayList<>();
-    iter.forEachRemaining(allValues::add);
+    iterator.forEachRemaining(allValues::add);
 
     //then
     assertThat(allPossiblePermutations).containsExactlyInAnyOrderElementsOf(allValues);
@@ -99,9 +98,9 @@ class LazyPermutationWithRepetitionIteratorTest {
     );
 
     //when
-    LazyPermutationWithRepetitionIterator<String> iter = new LazyPermutationWithRepetitionIterator<>(population, r);
+    LazyPermutationWithRepetitionIterator<String> iterator = new LazyPermutationWithRepetitionIterator<>(population, r);
     List<List<String>> allValues = new ArrayList<>();
-    iter.forEachRemaining(allValues::add);
+    iterator.forEachRemaining(allValues::add);
 
     //then
     assertThat(allPossiblePermutations).containsExactlyInAnyOrderElementsOf(allValues);
@@ -147,12 +146,12 @@ class LazyPermutationWithRepetitionIteratorTest {
     int r = 1;
 
     //when
-    LazyPermutationWithRepetitionIterator<Integer> iter = new LazyPermutationWithRepetitionIterator<>(population, r);
-    iter.next();
-    iter.next();
+    LazyPermutationWithRepetitionIterator<Integer> iterator = new LazyPermutationWithRepetitionIterator<>(population, r);
+    iterator.next();
+    iterator.next();
 
     //then
-    assertThatThrownBy(iter::next)
+    assertThatThrownBy(iterator::next)
       .isInstanceOf(NoSuchElementException.class);
   }
 

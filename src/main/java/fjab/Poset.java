@@ -12,6 +12,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static fjab.Util.arrayDeepCopy;
+import static fjab.Util.isSquareMatrix;
 import static java.util.stream.Collectors.toList;
 
 /**
@@ -74,16 +76,32 @@ public class Poset {
   private final int numberOfExpandedBinaryRelations;
   private final int numberOfReducedBinaryRelations;
 
-  public Poset(int[][] array) {
-    if (Arrays.stream(array).flatMapToInt(Arrays::stream).filter(j -> j != 0 && j != 1).count() > 0) {
-      throw new IllegalArgumentException("The Poset representation must contain the numbers 1 and 0 only");
+  public Poset(int[][] unsafeArray) {
+    if (Arrays.stream(unsafeArray).flatMapToInt(Arrays::stream).filter(j -> j != 0 && j != 1).count() > 0) {
+      throw new IllegalArgumentException("The binary relations representation must contain the numbers 1 and 0 only");
     }
+    if(!isSquareMatrix(unsafeArray)) {
+      throw new IllegalArgumentException("the array must be a NxN matrix, where N is the number of elements");
+    }
+
+    int[][] array = arrayDeepCopy(unsafeArray);
     checkReflexivityAndAntiSymmetryLaws(array);
     this.expandedArray = transitiveExpansion(array);
     this.reducedArray = transitiveReduction();
 
     this.numberOfExpandedBinaryRelations = Util.sum(this.expandedArray);
     this.numberOfReducedBinaryRelations = Util.sum(this.reducedArray);
+  }
+
+  public static int[][] buildBinaryRelationsFromFile(Path file) throws IOException, IllegalArgumentException {
+    List<String> lines = Files.readAllLines(file);
+    int[][] array = new int[lines.size()][lines.size()];
+    try {
+      lines.stream().map(line -> Arrays.stream(line.split(" ")).mapToInt(Integer::parseInt).toArray()).collect(toList()).toArray(array);
+    } catch (NumberFormatException e) {
+      throw new IllegalArgumentException("The file cannot have non-numeric chars");
+    }
+    return array;
   }
 
   /**
@@ -96,16 +114,7 @@ public class Poset {
    * @throws PosetException           If any of the Poset laws is violated
    */
   public static Poset buildPosetFromFile(Path file) throws IOException, IllegalArgumentException, PosetException {
-
-    List<String> lines = Files.readAllLines(file);
-    int[][] array = new int[lines.size()][lines.size()];
-    try {
-      lines.stream().map(line -> Arrays.stream(line.split(" ")).mapToInt(Integer::parseInt).toArray()).collect(toList()).toArray(array);
-    } catch (NumberFormatException e) {
-      throw new IllegalArgumentException("The Poset representation cannot have non-numeric chars");
-    }
-    return new Poset(array);
-
+    return new Poset(buildBinaryRelationsFromFile(file));
   }
 
   private static void checkReflexivityAndAntiSymmetryLaws(int[][] poset) throws PosetException {
@@ -166,7 +175,7 @@ public class Poset {
    * the transitive reduction (https://en.wikipedia.org/wiki/Transitive_reduction) of this
    */
   private int[][] transitiveReduction() {
-    int[][] newArray = Util.arrayDeepCopy(expandedArray);
+    int[][] newArray = arrayDeepCopy(expandedArray);
     for (int i = 0; i < expandedArray.length; i++) {
       for (int j = 0; j < expandedArray[i].length; j++) {
         if (i != j && expandedArray[i][j] == 1) {

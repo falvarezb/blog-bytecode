@@ -14,7 +14,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
-import static fjab.poset.Poset.buildBinaryRelationsFromFile;
+import static fjab.poset.Poset2.buildBinaryRelationsFromFile;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 

@@ -1,11 +1,15 @@
 package fjab.poset;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static fjab.poset.Util.isSquareMatrix;
+import static java.util.stream.Collectors.toList;
 
 public class Poset2<E> extends AbstractSet<E> {
 
@@ -23,6 +27,17 @@ public class Poset2<E> extends AbstractSet<E> {
     List<E> elements = List.copyOf(unsafeElements);
     this.internalPoset = new Poset(Util.arrayDeepCopy(binaryRelations));
     this.sortedElements = IntStream.of(internalPoset.sort()).mapToObj(elements::get).collect(Collectors.toList());
+  }
+
+  public static int[][] buildBinaryRelationsFromFile(Path file) throws IOException, IllegalArgumentException {
+    List<String> lines = Files.readAllLines(file);
+    int[][] array = new int[lines.size()][lines.size()];
+    try {
+      lines.stream().map(line -> Arrays.stream(line.split(" ")).mapToInt(Integer::parseInt).toArray()).collect(toList()).toArray(array);
+    } catch (NumberFormatException e) {
+      throw new IllegalArgumentException("The file cannot have non-numeric chars");
+    }
+    return array;
   }
 
   @Override

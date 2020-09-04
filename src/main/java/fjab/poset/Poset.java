@@ -5,16 +5,12 @@ import fjab.poset.error.InvalidPosetException;
 import fjab.poset.error.PosetException;
 import fjab.poset.error.ReflexivityException;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import static fjab.poset.Util.arrayDeepCopy;
 import static fjab.poset.Util.isSquareMatrix;
-import static java.util.stream.Collectors.toList;
 
 /**
  * A Poset (https://en.wikipedia.org/wiki/Partially_ordered_set) is a set of elements with a binary relation
@@ -91,30 +87,6 @@ public class Poset {
 
     this.numberOfExpandedBinaryRelations = Util.sum(this.expandedArray);
     this.numberOfReducedBinaryRelations = Util.sum(this.reducedArray);
-  }
-
-  public static int[][] buildBinaryRelationsFromFile(Path file) throws IOException, IllegalArgumentException {
-    List<String> lines = Files.readAllLines(file);
-    int[][] array = new int[lines.size()][lines.size()];
-    try {
-      lines.stream().map(line -> Arrays.stream(line.split(" ")).mapToInt(Integer::parseInt).toArray()).collect(toList()).toArray(array);
-    } catch (NumberFormatException e) {
-      throw new IllegalArgumentException("The file cannot have non-numeric chars");
-    }
-    return array;
-  }
-
-  /**
-   * Build a Poset based on the representation stored in the given file
-   *
-   * @param file File containing the Poset representation
-   * @return Final version of the Poset with the transitivity law applied
-   * @throws IOException              If file read fails
-   * @throws IllegalArgumentException If chars other than numbers are used
-   * @throws PosetException           If any of the Poset laws is violated
-   */
-  public static Poset buildPosetFromFile(Path file) throws IOException, IllegalArgumentException, PosetException {
-    return new Poset(buildBinaryRelationsFromFile(file));
   }
 
   private static void checkReflexivityAndAntiSymmetryLaws(int[][] poset) throws PosetException {

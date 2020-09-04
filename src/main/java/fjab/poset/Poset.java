@@ -73,20 +73,24 @@ public class Poset {
   private final int numberOfReducedBinaryRelations;
 
   public Poset(int[][] unsafeArray) {
-    if (Arrays.stream(unsafeArray).flatMapToInt(Arrays::stream).filter(j -> j != 0 && j != 1).count() > 0) {
-      throw new IllegalArgumentException("The binary relations representation must contain the numbers 1 and 0 only");
-    }
-    if(!isSquareMatrix(unsafeArray)) {
-      throw new IllegalArgumentException("the array must be a NxN matrix, where N is the number of elements");
-    }
-
     int[][] array = arrayDeepCopy(unsafeArray);
-    checkReflexivityAndAntiSymmetryLaws(array);
+    validateArray(array);
     this.expandedArray = transitiveExpansion(array);
     this.reducedArray = transitiveReduction();
 
     this.numberOfExpandedBinaryRelations = Util.sum(this.expandedArray);
     this.numberOfReducedBinaryRelations = Util.sum(this.reducedArray);
+  }
+
+  private static void validateArray(int[][] array) {
+    if (Arrays.stream(array).flatMapToInt(Arrays::stream).filter(j -> j != 0 && j != 1).count() > 0) {
+      throw new IllegalArgumentException("The binary relations representation must contain the numbers 1 and 0 only");
+    }
+    if(!isSquareMatrix(array)) {
+      throw new IllegalArgumentException("the array must be a NxN matrix, where N is the number of elements");
+    }
+
+    checkReflexivityAndAntiSymmetryLaws(array);
   }
 
   private static void checkReflexivityAndAntiSymmetryLaws(int[][] poset) throws PosetException {

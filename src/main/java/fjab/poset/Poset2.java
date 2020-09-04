@@ -16,17 +16,24 @@ public class Poset2<E> extends AbstractSet<E> {
   private final Poset internalPoset;
   private final List<E> sortedElements;
 
-  public Poset2(List<E> unsafeElements, int[][] binaryRelations) {
-    if(unsafeElements.size() != binaryRelations.length || !isSquareMatrix(binaryRelations)){
+  public Poset2(List<E> unsafeList, int[][] unsafeBinaryRelations) {
+    //as far as the Poset is concerned, we just need to preserve the immutability of the list, not of the
+    //elements themselves
+    List<E> elements = List.copyOf(unsafeList);
+    int[][] binaryRelations = Util.arrayDeepCopy(unsafeBinaryRelations);
+    validateArguments(elements, binaryRelations);
+
+    this.internalPoset = new Poset(binaryRelations);
+    this.sortedElements = IntStream.of(internalPoset.sort()).mapToObj(elements::get).collect(Collectors.toList());
+  }
+
+  private static <E> void validateArguments(List<E> elements, int[][] binaryRelations) {
+    if(elements.size() != binaryRelations.length || !isSquareMatrix(binaryRelations)){
       throw new IllegalArgumentException("there must be NxN binary relations, where N is the number of elements");
     }
-    if(new HashSet<E>(unsafeElements).size() != unsafeElements.size()) {
+    if(new HashSet<>(elements).size() != elements.size()) {
       throw new IllegalArgumentException("the list of elements cannot contain duplicates");
     }
-
-    List<E> elements = List.copyOf(unsafeElements);
-    this.internalPoset = new Poset(Util.arrayDeepCopy(binaryRelations));
-    this.sortedElements = IntStream.of(internalPoset.sort()).mapToObj(elements::get).collect(Collectors.toList());
   }
 
   public static int[][] buildBinaryRelationsFromFile(Path file) throws IOException, IllegalArgumentException {

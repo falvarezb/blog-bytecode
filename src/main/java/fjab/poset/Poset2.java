@@ -1,50 +1,35 @@
 package fjab.poset;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static fjab.poset.Util.isSquareMatrix;
-import static java.util.stream.Collectors.toList;
-
 public class Poset2<E> extends AbstractSet<E> {
 
-  private final Poset internalPoset;
+  //private final Poset internalPoset;
   private final List<E> sortedElements;
+
+  private final int[][] expandedArray;
+  private final int[][] reducedArray;
+  private final int numberOfExpandedBinaryRelations;
+  private final int numberOfReducedBinaryRelations;
 
   public Poset2(List<E> unsafeList, int[][] unsafeBinaryRelations) {
     //as far as the Poset is concerned, we just need to preserve the immutability of the list, not of the
     //elements themselves
     List<E> elements = List.copyOf(unsafeList);
     int[][] binaryRelations = Util.arrayDeepCopy(unsafeBinaryRelations);
-    validateArguments(elements, binaryRelations);
+    PosetUtil.validateArguments(elements, binaryRelations);
+    PosetUtil.validateArray(binaryRelations);
 
-    this.internalPoset = new Poset(binaryRelations);
-    this.sortedElements = IntStream.of(internalPoset.sort()).mapToObj(elements::get).collect(Collectors.toList());
-  }
+    this.expandedArray = PosetUtil.transitiveExpansion(binaryRelations);
+    this.reducedArray = PosetUtil.transitiveReduction(expandedArray);
+    this.numberOfExpandedBinaryRelations = Util.sum(this.expandedArray);
+    this.numberOfReducedBinaryRelations = Util.sum(this.reducedArray);
 
-  private static <E> void validateArguments(List<E> elements, int[][] binaryRelations) {
-    if(elements.size() != binaryRelations.length || !isSquareMatrix(binaryRelations)){
-      throw new IllegalArgumentException("there must be NxN binary relations, where N is the number of elements");
-    }
-    if(new HashSet<>(elements).size() != elements.size()) {
-      throw new IllegalArgumentException("the list of elements cannot contain duplicates");
-    }
-  }
-
-  public static int[][] buildBinaryRelationsFromFile(Path file) throws IOException, IllegalArgumentException {
-    List<String> lines = Files.readAllLines(file);
-    int[][] array = new int[lines.size()][lines.size()];
-    try {
-      lines.stream().map(line -> Arrays.stream(line.split(" ")).mapToInt(Integer::parseInt).toArray()).collect(toList()).toArray(array);
-    } catch (NumberFormatException e) {
-      throw new IllegalArgumentException("The file cannot have non-numeric chars");
-    }
-    return array;
+    //this.internalPoset = new Poset(binaryRelations);
+    this.sortedElements = IntStream.of(PosetUtil.sort(expandedArray)).mapToObj(elements::get).collect(Collectors.toList());
   }
 
   @Override
@@ -53,30 +38,29 @@ public class Poset2<E> extends AbstractSet<E> {
     if (o == null || getClass() != o.getClass()) return false;
     if (!super.equals(o)) return false;
     Poset2<?> poset2 = (Poset2<?>) o;
-    return internalPoset.equals(poset2.internalPoset);
+    return Arrays.deepEquals(expandedArray, poset2.expandedArray);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), internalPoset);
+    return Objects.hash(super.hashCode(), Arrays.deepHashCode(expandedArray));
   }
 
   public int[][] getExpandedBinaryRelations() {
-    return internalPoset.getExpandedArray();
+    return expandedArray;
   }
   public int[][] getReducedBinaryRelations() {
-    return internalPoset.getReducedArray();
+    return reducedArray;
   }
 
-  private static UnsupportedOperationException uoe() { return new UnsupportedOperationException(); }
   // all mutating methods throw UnsupportedOperationException
-  @Override public boolean add(E e) { throw uoe(); }
-  @Override public boolean addAll(Collection<? extends E> c) { throw uoe(); }
-  @Override public void    clear() { throw uoe(); }
-  @Override public boolean remove(Object o) { throw uoe(); }
-  @Override public boolean removeAll(Collection<?> c) { throw uoe(); }
-  @Override public boolean removeIf(Predicate<? super E> filter) { throw uoe(); }
-  @Override public boolean retainAll(Collection<?> c) { throw uoe(); }
+  @Override public boolean add(E e) { throw PosetUtil.uoe(); }
+  @Override public boolean addAll(Collection<? extends E> c) { throw PosetUtil.uoe(); }
+  @Override public void    clear() { throw PosetUtil.uoe(); }
+  @Override public boolean remove(Object o) { throw PosetUtil.uoe(); }
+  @Override public boolean removeAll(Collection<?> c) { throw PosetUtil.uoe(); }
+  @Override public boolean removeIf(Predicate<? super E> filter) { throw PosetUtil.uoe(); }
+  @Override public boolean retainAll(Collection<?> c) { throw PosetUtil.uoe(); }
 
   @Override
   public Iterator<E> iterator() {
@@ -86,5 +70,33 @@ public class Poset2<E> extends AbstractSet<E> {
   @Override
   public int size() {
     return sortedElements.size();
+  }
+
+  public int[][] getExpandedArray() {
+    return expandedArray;
+  }
+
+  public int[][] getReducedArray() {
+    return reducedArray;
+  }
+
+  public int getNumberOfReducedBinaryRelations() {
+    return numberOfReducedBinaryRelations;
+  }
+
+  public int getNumberOfExpandedBinaryRelations() {
+    return numberOfExpandedBinaryRelations;
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    for (int[] ints : expandedArray) {
+      for (int anInt : ints) {
+        sb.append(" ").append(anInt);
+      }
+      sb.append("\n");
+    }
+    return sb.toString();
   }
 }

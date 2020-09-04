@@ -9,7 +9,7 @@ public class Main {
 
   public static void main(String[] args) throws IOException, PosetException {
 
-    Poset poset = new Poset(Poset2.buildBinaryRelationsFromFile(Paths.get("src/main/resources/poset1.txt")));
+    Poset poset = new Poset(PosetUtil.buildBinaryRelationsFromFile(Paths.get("src/main/resources/poset1.txt")));
     System.out.println(poset.toString());
 
   }

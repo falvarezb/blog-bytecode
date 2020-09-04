@@ -242,6 +242,13 @@ public class PosetTest {
   //===================================================//
 
   @Property(edgeCases = EdgeCasesMode.NONE)
+  @Label("TE(TE(arr)) == TE(arr)")
+  void transitiveExpansionIsIdempotent(@ForAll("posetGenerator") Poset poset) {
+    assertArrayEquals(new Poset(poset.getExpandedArray()).getExpandedArray(), poset.getExpandedArray());
+    Statistics.collect(poset.getExpandedArray().length);
+  }
+
+  @Property(edgeCases = EdgeCasesMode.NONE)
   @Label("TE(TR(TE(arr))) == TE(arr)")
   void transitiveExpansionAndReductionAreInverseOfEachOther(@ForAll("posetGenerator") Poset poset) {
     assertArrayEquals(new Poset(new Poset(poset.getExpandedArray()).getReducedArray()).getExpandedArray(), poset.getExpandedArray());
@@ -256,7 +263,38 @@ public class PosetTest {
   }
 
   @Property(edgeCases = EdgeCasesMode.NONE)
-  @Label("for Posets of a given order, their transitive reduction contains the minimum possible number of binary relations")
+  @Label("The transitive expansion contains the maximum possible number of binary relations")
+  /*
+    Demonstration: for a given Poset, add binary relations one at a time. If the resulting Poset after expansion
+    equals the original one, then we have found a representation of the Poset with 1 more binary relation than the
+    transitive expansion.
+   */
+  boolean transitiveExpansionContainsTheMaximumNumberOfBinaryRelations(@ForAll("posetGenerator") Poset poset) {
+    int[][] transitiveExpansionArray = poset.getExpandedArray();
+    for (int i = 0; i < transitiveExpansionArray.length; i++) {
+      for (int j = 0; j < transitiveExpansionArray.length; j++) {
+        if (transitiveExpansionArray[i][j] == 0) {
+          //add 1 binary relation
+          transitiveExpansionArray[i][j] = 1;
+          try {
+            //check if the resulting Poset equals the original one
+            Poset newPoset = new Poset(transitiveExpansionArray);
+            if (newPoset.equals(poset)) {
+              return false;
+            }
+            //restore the binary relation
+            transitiveExpansionArray[i][j] = 0;
+          } catch (PosetException ignored) {
+          }
+        }
+      }
+    }
+    Statistics.collect(poset.getExpandedArray().length);
+    return true;
+  }
+
+  @Property(edgeCases = EdgeCasesMode.NONE)
+  @Label("The transitive reduction contains the minimum possible number of binary relations")
   /*
     Demonstration: for a given Poset, remove its binary relations one at a time. If the resulting Poset after expansion
     equals the original one, then we have found a representation of the Poset with 1 fewer binary relation than the

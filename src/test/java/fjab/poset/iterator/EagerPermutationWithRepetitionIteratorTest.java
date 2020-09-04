@@ -1,4 +1,4 @@
-package fjab.iterator;
+package fjab.poset.iterator;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -7,14 +7,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-class LazyPermutationWithRepetitionIteratorTest {
+class EagerPermutationWithRepetitionIteratorTest {
 
   @Test
   @DisplayName("iteration over all permutations corresponding to: n=2, r=2")
@@ -34,7 +32,7 @@ class LazyPermutationWithRepetitionIteratorTest {
     );
 
     //when
-    LazyPermutationWithRepetitionIterator<String> iterator = new LazyPermutationWithRepetitionIterator<>(population, r);
+    EagerPermutationWithRepetitionIterator<String> iterator = new EagerPermutationWithRepetitionIterator<>(population, r);
     List<List<String>> allValues = new ArrayList<>();
     iterator.forEachRemaining(allValues::add);
 
@@ -58,7 +56,7 @@ class LazyPermutationWithRepetitionIteratorTest {
     );
 
     //when
-    LazyPermutationWithRepetitionIterator<String> iterator = new LazyPermutationWithRepetitionIterator<>(population, r);
+    EagerPermutationWithRepetitionIterator<String> iterator = new EagerPermutationWithRepetitionIterator<>(population, r);
     List<List<String>> allValues = new ArrayList<>();
     iterator.forEachRemaining(allValues::add);
 
@@ -98,43 +96,12 @@ class LazyPermutationWithRepetitionIteratorTest {
     );
 
     //when
-    LazyPermutationWithRepetitionIterator<String> iterator = new LazyPermutationWithRepetitionIterator<>(population, r);
+    EagerPermutationWithRepetitionIterator<String> iterator = new EagerPermutationWithRepetitionIterator<>(population, r);
     List<List<String>> allValues = new ArrayList<>();
     iterator.forEachRemaining(allValues::add);
 
     //then
-    assertThat(allPossiblePermutations).containsExactlyInAnyOrderElementsOf(allValues);
-  }
-
-  @Test
-  @DisplayName("error when population length is less than 2: n=1, r=1")
-  public void iteration_1_1() {
-
-    //given
-    List<String> population = new ArrayList<>() {{
-      add("A");
-    }};
-    int r = 1;
-
-
-    //then
-    assertThatThrownBy(() -> new LazyPermutationWithRepetitionIterator<>(population, r))
-      .isInstanceOf(IllegalArgumentException.class)
-      .hasMessage("2 <= n <= 36");
-  }
-
-  @Test
-  @DisplayName("error when population length is greater than 36: n=37, r=1")
-  public void iteration_37_1() {
-
-    //given
-    List<Integer> population = IntStream.range(0,37).boxed().collect(Collectors.toList());
-    int r = 1;
-
-    //then
-    assertThatThrownBy(() -> new LazyPermutationWithRepetitionIterator<>(population, r))
-      .isInstanceOf(IllegalArgumentException.class)
-      .hasMessage("2 <= n <= 36");
+    assertThat(allPossiblePermutations).isEqualTo(allValues);
   }
 
   @Test
@@ -146,7 +113,7 @@ class LazyPermutationWithRepetitionIteratorTest {
     int r = 1;
 
     //when
-    LazyPermutationWithRepetitionIterator<Integer> iterator = new LazyPermutationWithRepetitionIterator<>(population, r);
+    EagerPermutationWithRepetitionIterator<Integer> iterator = new EagerPermutationWithRepetitionIterator<>(population, r);
     iterator.next();
     iterator.next();
 

@@ -1,4 +1,4 @@
-package fjab.iterator;
+package fjab.poset.iterator;
 
 import java.util.*;
 import java.util.stream.Collectors;

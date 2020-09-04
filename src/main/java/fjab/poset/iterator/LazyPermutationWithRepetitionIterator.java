@@ -1,11 +1,11 @@
-package fjab.iterator;
+package fjab.poset.iterator;
 
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
-import static fjab.Util.*;
+import static fjab.poset.Util.*;
 
 /**
  * Iterator over permutations of r elements of type T taken from a population of n elements with replacement.

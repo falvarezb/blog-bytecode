@@ -1,4 +1,4 @@
-package fjab;
+package fjab.poset;
 
 import net.jqwik.api.Arbitrary;
 import org.junit.jupiter.api.DisplayName;

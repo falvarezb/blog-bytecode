@@ -1,9 +1,10 @@
-package fjab;
+package fjab.poset;
 
-import fjab.error.AntiSymmetryException;
-import fjab.error.InvalidPosetException;
-import fjab.error.PosetException;
-import fjab.error.ReflexivityException;
+import fjab.poset.Poset;
+import fjab.poset.error.AntiSymmetryException;
+import fjab.poset.error.InvalidPosetException;
+import fjab.poset.error.PosetException;
+import fjab.poset.error.ReflexivityException;
 import net.jqwik.api.*;
 import net.jqwik.api.statistics.Statistics;
 import org.junit.jupiter.api.DisplayName;
@@ -18,7 +19,7 @@ import java.nio.file.Paths;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-import static fjab.Poset.buildPosetFromFile;
+import static fjab.poset.Poset.buildPosetFromFile;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 

@@ -1,11 +1,11 @@
-package fjab;
+package fjab.poset;
 
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static fjab.Util.isSquareMatrix;
+import static fjab.poset.Util.isSquareMatrix;
 
 public class Poset2<E> extends AbstractSet<E> {
 

@@ -1,11 +1,11 @@
-package fjab;
+package fjab.poset;
 
-import fjab.error.PosetException;
+import fjab.poset.error.PosetException;
 
 import java.io.IOException;
 import java.nio.file.Paths;
 
-import static fjab.Poset.*;
+import static fjab.poset.Poset.*;
 
 public class Main {
 

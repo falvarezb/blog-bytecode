@@ -1,6 +1,6 @@
-package fjab;
+package fjab.poset;
 
-import fjab.error.PosetException;
+import fjab.poset.error.PosetException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -14,7 +14,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
-import static fjab.Poset.buildBinaryRelationsFromFile;
+import static fjab.poset.Poset.buildBinaryRelationsFromFile;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 

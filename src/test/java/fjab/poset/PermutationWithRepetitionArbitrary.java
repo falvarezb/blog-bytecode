@@ -1,7 +1,7 @@
-package fjab;
+package fjab.poset;
 
-import fjab.iterator.LazyPermutationWithRepetitionIterator;
-import fjab.iterator.PermutationWithRepetition;
+import fjab.poset.iterator.LazyPermutationWithRepetitionIterator;
+import fjab.poset.iterator.PermutationWithRepetition;
 import net.jqwik.api.*;
 
 import java.util.Iterator;

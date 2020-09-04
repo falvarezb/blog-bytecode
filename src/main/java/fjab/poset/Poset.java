@@ -1,9 +1,9 @@
-package fjab;
+package fjab.poset;
 
-import fjab.error.AntiSymmetryException;
-import fjab.error.InvalidPosetException;
-import fjab.error.PosetException;
-import fjab.error.ReflexivityException;
+import fjab.poset.error.AntiSymmetryException;
+import fjab.poset.error.InvalidPosetException;
+import fjab.poset.error.PosetException;
+import fjab.poset.error.ReflexivityException;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -12,8 +12,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static fjab.Util.arrayDeepCopy;
-import static fjab.Util.isSquareMatrix;
+import static fjab.poset.Util.arrayDeepCopy;
+import static fjab.poset.Util.isSquareMatrix;
 import static java.util.stream.Collectors.toList;
 
 /**

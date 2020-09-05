@@ -10,7 +10,7 @@ public class Main {
 
   public static void main(String[] args) throws IOException, PosetException {
 
-    Poset<String> poset = new Poset<>(Arrays.asList("a", "b", "c", "d"), PosetUtil.buildBinaryRelationsFromFile(Paths.get("src/main/resources/poset1.txt")));
+    Poset<String> poset = new Poset<>(Arrays.asList("a", "b", "c", "d"), PosetUtil.buildIncidenceMatrixFromFile(Paths.get("src/main/resources/poset1.txt")));
     System.out.println(poset.toString());
 
   }

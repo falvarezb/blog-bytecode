@@ -66,18 +66,26 @@ public class Poset<E> extends AbstractSet<E> {
   private final int numberOfExpandedBinaryRelations;
   private final int numberOfReducedBinaryRelations;
 
-  public Poset(List<E> unsafeList, int[][] unsafeBinaryRelations) {
+  /**
+   * Incidence matrix (https://en.wikipedia.org/wiki/Incidence_matrix) shows the relationship between two classes of objects.
+   * In this case it is not 2 classes of objects but the relationship between the objects of the set
+   * Incidence matrix must be a square binary matrix (https://en.wikipedia.org/wiki/Logical_matrix)
+   *
+   * @param elements
+   * @param incidenceMatrix The idea is to index the rows and columns of the incidence matrix by the elements of the set
+   */
+  public Poset(List<E> elements, int[][] incidenceMatrix) {
     //as far as the Poset is concerned, we just need to preserve the immutability of the list, not of the
     //elements themselves
-    List<E> elements = List.copyOf(unsafeList);
-    int[][] binaryRelations = Util.arrayDeepCopy(unsafeBinaryRelations);
-    PosetUtil.validateArguments(elements, binaryRelations);
+    List<E> internalElements = List.copyOf(elements);
+    int[][] internalIncidenceMatrix = Util.arrayDeepCopy(incidenceMatrix);
+    PosetUtil.validateArguments(internalElements, internalIncidenceMatrix);
 
-    this.expandedArray = PosetUtil.transitiveExpansion(binaryRelations);
+    this.expandedArray = PosetUtil.transitiveExpansion(internalIncidenceMatrix);
     this.reducedArray = PosetUtil.transitiveReduction(expandedArray);
     this.numberOfExpandedBinaryRelations = Util.sum(this.expandedArray);
     this.numberOfReducedBinaryRelations = Util.sum(this.reducedArray);
-    this.sortedElements = IntStream.of(PosetUtil.sort(expandedArray)).mapToObj(elements::get).collect(Collectors.toList());
+    this.sortedElements = IntStream.of(PosetUtil.sort(expandedArray)).mapToObj(internalElements::get).collect(Collectors.toList());
   }
 
   @Override

@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import static fjab.poset.PosetUtil.buildBinaryRelationsFromFile;
+import static fjab.poset.PosetUtil.buildIncidenceMatrixFromFile;
 import static fjab.poset.PosetUtil.collectElements;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
@@ -33,10 +33,10 @@ public class PosetTest {
   @DisplayName("poset construction failure")
   class PosetConstructionFailureTest {
     @Test
-    @DisplayName("there must be NxN binary relations, where N is the number of elements")
-    public void testMatchOfElementsWithBinaryRelations() {
+    @DisplayName("incidence matrix must be NxN, where N is the number of elements")
+    public void testIncidenceMatrixDimensions() {
       Exception e = assertThrows(IllegalArgumentException.class, () -> new Poset<>(Arrays.asList("a", "b"), new int[][]{new int[]{1}}));
-      assertEquals("there must be NxN binary relations, where N is the number of elements", e.getMessage());
+      assertEquals("The incidence matrix must be NxN, where N is the number of elements", e.getMessage());
     }
 
     @Test
@@ -53,19 +53,19 @@ public class PosetTest {
     @Test
     @DisplayName("illegal chars in file: non-numeric char")
     public void testBuildPosetFromFileWithIllegalChars() {
-      Exception e = assertThrows(IllegalArgumentException.class, () -> new Poset<>(Arrays.asList("a", "b", "c", "d"), PosetUtil.buildBinaryRelationsFromFile(Paths.get("src/test/resources/illegal_non_numeric_in_file.txt"))));
+      Exception e = assertThrows(IllegalArgumentException.class, () -> new Poset<>(Arrays.asList("a", "b", "c", "d"), PosetUtil.buildIncidenceMatrixFromFile(Paths.get("src/test/resources/illegal_non_numeric_in_file.txt"))));
       assertEquals("The file cannot have non-numeric chars", e.getMessage());
     }
 
     @Test
     @DisplayName("illegal chars in file: number other than 0 or 1")
     public void testBuildPosetFromFileWithIllegalChars_2() {
-      Exception e = assertThrows(IllegalArgumentException.class, () -> new Poset<>(Arrays.asList("a", "b", "c", "d"), PosetUtil.buildBinaryRelationsFromFile(Paths.get("src/test/resources/illegal_number_in_file.txt"))));
-      assertEquals("The binary relations representation must contain the numbers 1 and 0 only", e.getMessage());
+      Exception e = assertThrows(IllegalArgumentException.class, () -> new Poset<>(Arrays.asList("a", "b", "c", "d"), PosetUtil.buildIncidenceMatrixFromFile(Paths.get("src/test/resources/illegal_number_in_file.txt"))));
+      assertEquals("The incidence matrix must contain the numbers 1 and 0 only", e.getMessage());
     }
 
     @Test
-    @DisplayName("illegal elements in array: number other than 0 or 1")
+    @DisplayName("illegal elements in incidence matrix: number other than 0 or 1")
     public void testBuildPosetFromArrayWithIllegalChars() {
 
       Exception e = assertThrows(IllegalArgumentException.class, () -> new Poset<>(Arrays.asList("a", "b", "c", "d"), new int[][]{
@@ -74,7 +74,7 @@ public class PosetTest {
         {0, 0, 1, 0},
         {1, 1, 1, 1}
       }));
-      assertEquals("The binary relations representation must contain the numbers 1 and 0 only", e.getMessage());
+      assertEquals("The incidence matrix must contain the numbers 1 and 0 only", e.getMessage());
     }
   }
 
@@ -164,21 +164,21 @@ public class PosetTest {
   @DisplayName("invalid poset")
   class InvalidPosetTest {
     @Test
-    @DisplayName("violation of antisymmetry rule in the representation supplied")
+    @DisplayName("violation of antisymmetry rule in incidence matrix")
     public void testAntisymmetryRuleViolation() {
-      assertThrows(AntiSymmetryException.class, () -> new Poset<>(Arrays.asList("a", "b", "c", "d"), PosetUtil.buildBinaryRelationsFromFile(Paths.get("src/test/resources/poset_antisymmetry_rule.txt"))));
+      assertThrows(AntiSymmetryException.class, () -> new Poset<>(Arrays.asList("a", "b", "c", "d"), buildIncidenceMatrixFromFile(Paths.get("src/test/resources/poset_antisymmetry_rule.txt"))));
     }
 
     @Test
     @DisplayName("violation of antisymmetry rule after transitive expansion")
     public void testTransitivityExpansionFailure() {
-      assertThrows(InvalidPosetException.class, () -> new Poset<>(Arrays.asList("a", "b", "c", "d"), PosetUtil.buildBinaryRelationsFromFile(Paths.get("src/test/resources/poset_antisymmetry_rule_after_transitive_rule.txt"))));
+      assertThrows(InvalidPosetException.class, () -> new Poset<>(Arrays.asList("a", "b", "c", "d"), buildIncidenceMatrixFromFile(Paths.get("src/test/resources/poset_antisymmetry_rule_after_transitive_rule.txt"))));
     }
 
     @Test
     @DisplayName("violation of reflexivity rule")
     public void testReflexivityRuleViolation() {
-      assertThrows(ReflexivityException.class, () -> new Poset<>(Arrays.asList("a", "b", "c", "d"), PosetUtil.buildBinaryRelationsFromFile(Paths.get("src/test/resources/poset_reflexivity_rule.txt"))));
+      assertThrows(ReflexivityException.class, () -> new Poset<>(Arrays.asList("a", "b", "c", "d"), buildIncidenceMatrixFromFile(Paths.get("src/test/resources/poset_reflexivity_rule.txt"))));
     }
   }
 
@@ -187,7 +187,7 @@ public class PosetTest {
   @MethodSource("sortSupplier")
   @DisplayName("topological sort of poset")
   public void testSort(String fileName, List<String> elements, List<String> elementsInExpectedOrder) throws IOException, PosetException {
-    assertIterableEquals(elementsInExpectedOrder, new Poset<>(elements, buildBinaryRelationsFromFile(Paths.get(fileName))));
+    assertIterableEquals(elementsInExpectedOrder, new Poset<>(elements, buildIncidenceMatrixFromFile(Paths.get(fileName))));
   }
 
   static Stream<Arguments> sortSupplier() {
@@ -202,7 +202,7 @@ public class PosetTest {
   @MethodSource("transitiveExpansionSupplier")
   @DisplayName("transitive expansion")
   public void testTransitiveExpansion(String fileName, List<String> elements, int[][] array) throws IOException, PosetException {
-    Poset<String> poset = new Poset<>(elements, buildBinaryRelationsFromFile(Paths.get(fileName)));
+    Poset<String> poset = new Poset<>(elements, buildIncidenceMatrixFromFile(Paths.get(fileName)));
     assertArrayEquals(array, poset.getExpandedBinaryRelations());
   }
 
@@ -244,7 +244,7 @@ public class PosetTest {
   @MethodSource("transitiveReductionSupplier")
   @DisplayName("transitive reduction")
   public void testTransitiveReduction(String fileName, List<String> elements, int[][] array) throws IOException, PosetException {
-    Poset<String> poset = new Poset<>(elements, buildBinaryRelationsFromFile(Paths.get(fileName)));
+    Poset<String> poset = new Poset<>(elements, buildIncidenceMatrixFromFile(Paths.get(fileName)));
     assertArrayEquals(array, poset.getReducedBinaryRelations());
   }
 

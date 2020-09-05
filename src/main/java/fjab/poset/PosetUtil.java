@@ -19,13 +19,13 @@ import static java.util.stream.Collectors.toList;
 
 public class PosetUtil {
 
-  static void checkReflexivityAndAntiSymmetryLaws(int[][] poset) throws PosetException {
-    for (int i = 0; i < poset.length; i++) {
-      if (poset[i][i] != 1) {
+  static void checkReflexivityAndAntiSymmetryLaws(int[][] incidenceMatrix) throws PosetException {
+    for (int i = 0; i < incidenceMatrix.length; i++) {
+      if (incidenceMatrix[i][i] != 1) {
         throw new ReflexivityException();
       }
-      for (int j = i + 1; j < poset[i].length; j++) {
-        if (poset[i][j] == 1 && poset[j][i] == 1) {
+      for (int j = i + 1; j < incidenceMatrix[i].length; j++) {
+        if (incidenceMatrix[i][j] == 1 && incidenceMatrix[j][i] == 1) {
           throw new AntiSymmetryException();
         }
       }
@@ -44,12 +44,12 @@ public class PosetUtil {
    * <p>
    * This method is the inverse of a transitive reduction (https://en.wikipedia.org/wiki/Transitive_reduction)
    *
-   * @param array Internal representation of the Poset
+   * @param incidenceMatrix Internal representation of the Poset
    * @return Original array updated in place
    * @throws InvalidPosetException Thrown if transitive expansion is not possible
    */
-  static int[][] transitiveExpansion(int[][] array) {
-    int[][] newArray = arrayDeepCopy(array);
+  static int[][] transitiveExpansion(int[][] incidenceMatrix) {
+    int[][] newArray = arrayDeepCopy(incidenceMatrix);
     //initialisation
     AuxRowForTransitiveExpansion[] rows = new AuxRowForTransitiveExpansion[newArray.length];
     for (int i = 0; i < newArray.length; i++) {
@@ -105,7 +105,7 @@ public class PosetUtil {
     return newArray;
   }
 
-  public static int[][] buildBinaryRelationsFromFile(Path file) throws IOException, IllegalArgumentException {
+  public static int[][] buildIncidenceMatrixFromFile(Path file) throws IOException, IllegalArgumentException {
     List<String> lines = Files.readAllLines(file);
     int[][] array = new int[lines.size()][lines.size()];
     try {
@@ -116,18 +116,18 @@ public class PosetUtil {
     return array;
   }
 
-  static <E> void validateArguments(List<E> elements, int[][] binaryRelations) {
-    if(elements.size() != binaryRelations.length || !isSquareMatrix(binaryRelations)){
-      throw new IllegalArgumentException("there must be NxN binary relations, where N is the number of elements");
+  static <E> void validateArguments(List<E> elements, int[][] incidenceMatrix) {
+    if(elements.size() != incidenceMatrix.length || !isSquareMatrix(incidenceMatrix)){
+      throw new IllegalArgumentException("The incidence matrix must be NxN, where N is the number of elements");
     }
     if(new HashSet<>(elements).size() != elements.size()) {
       throw new IllegalArgumentException("the list of elements cannot contain duplicates");
     }
-    if (Arrays.stream(binaryRelations).flatMapToInt(Arrays::stream).filter(j -> j != 0 && j != 1).count() > 0) {
-      throw new IllegalArgumentException("The binary relations representation must contain the numbers 1 and 0 only");
+    if (Arrays.stream(incidenceMatrix).flatMapToInt(Arrays::stream).filter(j -> j != 0 && j != 1).count() > 0) {
+      throw new IllegalArgumentException("The incidence matrix must contain the numbers 1 and 0 only");
     }
 
-    checkReflexivityAndAntiSymmetryLaws(binaryRelations);
+    checkReflexivityAndAntiSymmetryLaws(incidenceMatrix);
   }
 
   static UnsupportedOperationException uoe() { return new UnsupportedOperationException(); }

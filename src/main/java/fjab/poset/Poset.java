@@ -72,7 +72,6 @@ public class Poset<E> extends AbstractSet<E> {
     List<E> elements = List.copyOf(unsafeList);
     int[][] binaryRelations = Util.arrayDeepCopy(unsafeBinaryRelations);
     PosetUtil.validateArguments(elements, binaryRelations);
-    PosetUtil.validateArray(binaryRelations);
 
     this.expandedArray = PosetUtil.transitiveExpansion(binaryRelations);
     this.reducedArray = PosetUtil.transitiveReduction(expandedArray);
@@ -146,6 +145,6 @@ public class Poset<E> extends AbstractSet<E> {
       }
       sb.append("\n");
     }
-    return sb.toString();
+    return sortedElements + "\n" + sb.toString();
   }
 }

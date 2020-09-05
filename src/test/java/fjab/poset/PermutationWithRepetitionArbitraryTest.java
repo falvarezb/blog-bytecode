@@ -117,6 +117,7 @@ class PermutationWithRepetitionArbitraryTest {
     }
   }
 
+  @SuppressWarnings("OptionalGetWithoutIsPresent")
   @Nested
   class ExhaustiveGeneratorTest {
     @Test

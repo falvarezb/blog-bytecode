@@ -21,6 +21,7 @@ public class Util {
    * "0123" => Stream(0,1,2,3)
    *
    */
+  @SuppressWarnings("unused")
   public static Stream<Integer> stringToIntegerStream(String str) {
     return str.chars().mapToObj(c -> Integer.valueOf(String.valueOf((char) c)));
   }

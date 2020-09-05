@@ -18,13 +18,6 @@ import static fjab.poset.Util.isSquareMatrix;
 import static java.util.stream.Collectors.toList;
 
 public class PosetUtil {
-  static void validateArray(int[][] array) {
-    if (Arrays.stream(array).flatMapToInt(Arrays::stream).filter(j -> j != 0 && j != 1).count() > 0) {
-      throw new IllegalArgumentException("The binary relations representation must contain the numbers 1 and 0 only");
-    }
-
-    checkReflexivityAndAntiSymmetryLaws(array);
-  }
 
   static void checkReflexivityAndAntiSymmetryLaws(int[][] poset) throws PosetException {
     for (int i = 0; i < poset.length; i++) {
@@ -130,14 +123,44 @@ public class PosetUtil {
     if(new HashSet<>(elements).size() != elements.size()) {
       throw new IllegalArgumentException("the list of elements cannot contain duplicates");
     }
+    if (Arrays.stream(binaryRelations).flatMapToInt(Arrays::stream).filter(j -> j != 0 && j != 1).count() > 0) {
+      throw new IllegalArgumentException("The binary relations representation must contain the numbers 1 and 0 only");
+    }
+
+    checkReflexivityAndAntiSymmetryLaws(binaryRelations);
   }
 
   static UnsupportedOperationException uoe() { return new UnsupportedOperationException(); }
 
   /**
+   * This algorithm consists in sorting the rows by the sum of its elements (as we use 1s and 0s
+   * to represent the binary relations, the sum of the elements of each row is equivalent to counting
+   * the number of binary relations of each element)
+   *
+   * @return Array of sorted labels
+   */
+  static int[] sort(int[][] expandedArray) {
+    //initialisation
+    PosetUtil.AuxRowForSort[] rows = new PosetUtil.AuxRowForSort[expandedArray.length];
+    for (int i = 0; i < expandedArray.length; i++) {
+      rows[i] = new PosetUtil.AuxRowForSort(expandedArray[i], i);
+    }
+
+    Arrays.sort(rows, (o1, o2) -> o2.numberOfBinaryRelations - o1.numberOfBinaryRelations);
+
+    return Arrays.stream(rows).mapToInt(row -> row.label).toArray();
+  }
+
+  static <E> List<E> collectElements(Poset<E> poset) {
+    List<E> elements = new ArrayList<>();
+    poset.iterator().forEachRemaining(elements::add);
+    return elements;
+  }
+
+  /**
    * Auxiliary object to do the topological sort of the poset
    */
-  static class AuxRowForSort {
+  private static class AuxRowForSort {
     private final int label;
     private final int numberOfBinaryRelations;
 
@@ -150,7 +173,7 @@ public class PosetUtil {
   /**
    * Auxiliary object to do the transitive expansion of the poset
    */
-  static class AuxRowForTransitiveExpansion {
+  private static class AuxRowForTransitiveExpansion {
 
     private final int[] row;
     private final List<AuxRowForTransitiveExpansion> subscribers = new ArrayList<>();
@@ -181,30 +204,5 @@ public class PosetUtil {
         this.notifySubscribers();
       }
     }
-  }
-
-  /**
-   * This algorithm consists in sorting the rows by the sum of its elements (as we use 1s and 0s
-   * to represent the binary relations, the sum of the elements of each row is equivalent to counting
-   * the number of binary relations of each element)
-   *
-   * @return Array of sorted labels
-   */
-  public static int[] sort(int[][] expandedArray) {
-    //initialisation
-    PosetUtil.AuxRowForSort[] rows = new PosetUtil.AuxRowForSort[expandedArray.length];
-    for (int i = 0; i < expandedArray.length; i++) {
-      rows[i] = new PosetUtil.AuxRowForSort(expandedArray[i], i);
-    }
-
-    Arrays.sort(rows, (o1, o2) -> o2.numberOfBinaryRelations - o1.numberOfBinaryRelations);
-
-    return Arrays.stream(rows).mapToInt(row -> row.label).toArray();
-  }
-
-  public static <E> List<E> collectElements(Poset<E> poset) {
-    List<E> elements = new ArrayList<>();
-    poset.iterator().forEachRemaining(elements::add);
-    return elements;
   }
 }

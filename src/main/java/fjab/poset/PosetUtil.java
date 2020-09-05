@@ -202,7 +202,7 @@ public class PosetUtil {
     return Arrays.stream(rows).mapToInt(row -> row.label).toArray();
   }
 
-  public static <E> List<E> collectElements(Poset2<E> poset) {
+  public static <E> List<E> collectElements(Poset<E> poset) {
     List<E> elements = new ArrayList<>();
     poset.iterator().forEachRemaining(elements::add);
     return elements;

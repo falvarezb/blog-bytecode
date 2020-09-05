@@ -27,7 +27,7 @@ import static fjab.poset.PosetUtil.collectElements;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
-public class Poset2Test {
+public class PosetTest {
 
   @Nested
   @DisplayName("poset construction failure")
@@ -35,14 +35,14 @@ public class Poset2Test {
     @Test
     @DisplayName("there must be NxN binary relations, where N is the number of elements")
     public void testMatchOfElementsWithBinaryRelations() {
-      Exception e = assertThrows(IllegalArgumentException.class, () -> new Poset2<>(Arrays.asList("a", "b"), new int[][]{new int[]{1}}));
+      Exception e = assertThrows(IllegalArgumentException.class, () -> new Poset<>(Arrays.asList("a", "b"), new int[][]{new int[]{1}}));
       assertEquals("there must be NxN binary relations, where N is the number of elements", e.getMessage());
     }
 
     @Test
     @DisplayName("the list of elements cannot contain duplicates")
     public void testNotDuplicateElements() {
-      Exception e = assertThrows(IllegalArgumentException.class, () -> new Poset2<>(Arrays.asList("a", "b", "a"), new int[][]{
+      Exception e = assertThrows(IllegalArgumentException.class, () -> new Poset<>(Arrays.asList("a", "b", "a"), new int[][]{
         {1,1,1},
         {0,1,1},
         {0,0,1}
@@ -53,14 +53,14 @@ public class Poset2Test {
     @Test
     @DisplayName("illegal chars in file: non-numeric char")
     public void testBuildPosetFromFileWithIllegalChars() {
-      Exception e = assertThrows(IllegalArgumentException.class, () -> new Poset2<>(Arrays.asList("a", "b", "c", "d"), PosetUtil.buildBinaryRelationsFromFile(Paths.get("src/test/resources/illegal_non_numeric_in_file.txt"))));
+      Exception e = assertThrows(IllegalArgumentException.class, () -> new Poset<>(Arrays.asList("a", "b", "c", "d"), PosetUtil.buildBinaryRelationsFromFile(Paths.get("src/test/resources/illegal_non_numeric_in_file.txt"))));
       assertEquals("The file cannot have non-numeric chars", e.getMessage());
     }
 
     @Test
     @DisplayName("illegal chars in file: number other than 0 or 1")
     public void testBuildPosetFromFileWithIllegalChars_2() {
-      Exception e = assertThrows(IllegalArgumentException.class, () -> new Poset2<>(Arrays.asList("a", "b", "c", "d"), PosetUtil.buildBinaryRelationsFromFile(Paths.get("src/test/resources/illegal_number_in_file.txt"))));
+      Exception e = assertThrows(IllegalArgumentException.class, () -> new Poset<>(Arrays.asList("a", "b", "c", "d"), PosetUtil.buildBinaryRelationsFromFile(Paths.get("src/test/resources/illegal_number_in_file.txt"))));
       assertEquals("The binary relations representation must contain the numbers 1 and 0 only", e.getMessage());
     }
 
@@ -68,7 +68,7 @@ public class Poset2Test {
     @DisplayName("illegal elements in array: number other than 0 or 1")
     public void testBuildPosetFromArrayWithIllegalChars() {
 
-      Exception e = assertThrows(IllegalArgumentException.class, () -> new Poset2<>(Arrays.asList("a", "b", "c", "d"), new int[][]{
+      Exception e = assertThrows(IllegalArgumentException.class, () -> new Poset<>(Arrays.asList("a", "b", "c", "d"), new int[][]{
         {5, 1, 1, 0},
         {0, 1, 1, 0},
         {0, 0, 1, 0},
@@ -92,8 +92,8 @@ public class Poset2Test {
         {1, 1, 1, 1}
       };
 
-      Poset2<String> poset1 = new Poset2<>(elements, binaryRepresentation);
-      Poset2<String> poset2 = new Poset2<>(elements, binaryRepresentation);
+      Poset<String> poset1 = new Poset<>(elements, binaryRepresentation);
+      Poset<String> poset2 = new Poset<>(elements, binaryRepresentation);
       assertEquals(poset1, poset2);
     }
 
@@ -115,8 +115,8 @@ public class Poset2Test {
         {1, 0, 0, 1}
       };
 
-      Poset2<String> poset1 = new Poset2<>(elements1, binaryRepresentation1);
-      Poset2<String> poset2 = new Poset2<>(elements2, binaryRepresentation2);
+      Poset<String> poset1 = new Poset<>(elements1, binaryRepresentation1);
+      Poset<String> poset2 = new Poset<>(elements2, binaryRepresentation2);
       assertEquals(poset1, poset2);
     }
 
@@ -132,8 +132,8 @@ public class Poset2Test {
         {1, 1, 1, 1}
       };
 
-      Poset2<String> poset1 = new Poset2<>(elements1, binaryRepresentation);
-      Poset2<String> poset2 = new Poset2<>(elements2, binaryRepresentation);
+      Poset<String> poset1 = new Poset<>(elements1, binaryRepresentation);
+      Poset<String> poset2 = new Poset<>(elements2, binaryRepresentation);
       assertNotEquals(poset1, poset2);
     }
 
@@ -154,8 +154,8 @@ public class Poset2Test {
         {1, 1, 1, 1}
       };
 
-      Poset2<String> poset1 = new Poset2<>(elements, binaryRepresentation1);
-      Poset2<String> poset2 = new Poset2<>(elements, binaryRepresentation2);
+      Poset<String> poset1 = new Poset<>(elements, binaryRepresentation1);
+      Poset<String> poset2 = new Poset<>(elements, binaryRepresentation2);
       assertNotEquals(poset1, poset2);
     }
   }
@@ -166,19 +166,19 @@ public class Poset2Test {
     @Test
     @DisplayName("violation of antisymmetry rule in the representation supplied")
     public void testAntisymmetryRuleViolation() {
-      assertThrows(AntiSymmetryException.class, () -> new Poset2<>(Arrays.asList("a", "b", "c", "d"), PosetUtil.buildBinaryRelationsFromFile(Paths.get("src/test/resources/poset_antisymmetry_rule.txt"))));
+      assertThrows(AntiSymmetryException.class, () -> new Poset<>(Arrays.asList("a", "b", "c", "d"), PosetUtil.buildBinaryRelationsFromFile(Paths.get("src/test/resources/poset_antisymmetry_rule.txt"))));
     }
 
     @Test
     @DisplayName("violation of antisymmetry rule after transitive expansion")
     public void testTransitivityExpansionFailure() {
-      assertThrows(InvalidPosetException.class, () -> new Poset2<>(Arrays.asList("a", "b", "c", "d"), PosetUtil.buildBinaryRelationsFromFile(Paths.get("src/test/resources/poset_antisymmetry_rule_after_transitive_rule.txt"))));
+      assertThrows(InvalidPosetException.class, () -> new Poset<>(Arrays.asList("a", "b", "c", "d"), PosetUtil.buildBinaryRelationsFromFile(Paths.get("src/test/resources/poset_antisymmetry_rule_after_transitive_rule.txt"))));
     }
 
     @Test
     @DisplayName("violation of reflexivity rule")
     public void testReflexivityRuleViolation() {
-      assertThrows(ReflexivityException.class, () -> new Poset2<>(Arrays.asList("a", "b", "c", "d"), PosetUtil.buildBinaryRelationsFromFile(Paths.get("src/test/resources/poset_reflexivity_rule.txt"))));
+      assertThrows(ReflexivityException.class, () -> new Poset<>(Arrays.asList("a", "b", "c", "d"), PosetUtil.buildBinaryRelationsFromFile(Paths.get("src/test/resources/poset_reflexivity_rule.txt"))));
     }
   }
 
@@ -187,7 +187,7 @@ public class Poset2Test {
   @MethodSource("sortSupplier")
   @DisplayName("topological sort of poset")
   public void testSort(String fileName, List<String> elements, List<String> elementsInExpectedOrder) throws IOException, PosetException {
-    assertIterableEquals(elementsInExpectedOrder, new Poset2<>(elements, buildBinaryRelationsFromFile(Paths.get(fileName))));
+    assertIterableEquals(elementsInExpectedOrder, new Poset<>(elements, buildBinaryRelationsFromFile(Paths.get(fileName))));
   }
 
   static Stream<Arguments> sortSupplier() {
@@ -202,7 +202,7 @@ public class Poset2Test {
   @MethodSource("transitiveExpansionSupplier")
   @DisplayName("transitive expansion")
   public void testTransitiveExpansion(String fileName, List<String> elements, int[][] array) throws IOException, PosetException {
-    Poset2<String> poset = new Poset2<>(elements, buildBinaryRelationsFromFile(Paths.get(fileName)));
+    Poset<String> poset = new Poset<>(elements, buildBinaryRelationsFromFile(Paths.get(fileName)));
     assertArrayEquals(array, poset.getExpandedBinaryRelations());
   }
 
@@ -244,7 +244,7 @@ public class Poset2Test {
   @MethodSource("transitiveReductionSupplier")
   @DisplayName("transitive reduction")
   public void testTransitiveReduction(String fileName, List<String> elements, int[][] array) throws IOException, PosetException {
-    Poset2<String> poset = new Poset2<>(elements, buildBinaryRelationsFromFile(Paths.get(fileName)));
+    Poset<String> poset = new Poset<>(elements, buildBinaryRelationsFromFile(Paths.get(fileName)));
     assertArrayEquals(array, poset.getReducedBinaryRelations());
   }
 
@@ -288,21 +288,21 @@ public class Poset2Test {
 
   @Property(edgeCases = EdgeCasesMode.NONE)
   @Label("TE(TE(arr)) == TE(arr)")
-  void transitiveExpansionIsIdempotent(@ForAll("posetGenerator") Poset2<Integer> poset) {
-    assertArrayEquals(new Poset2<>(collectElements(poset), poset.getExpandedArray()).getExpandedArray(), poset.getExpandedArray());
+  void transitiveExpansionIsIdempotent(@ForAll("posetGenerator") Poset<Integer> poset) {
+    assertArrayEquals(new Poset<>(collectElements(poset), poset.getExpandedArray()).getExpandedArray(), poset.getExpandedArray());
     Statistics.collect(poset.getExpandedArray().length);
   }
 
   @Property(edgeCases = EdgeCasesMode.NONE)
   @Label("TE(TR(TE(arr))) == TE(arr)")
-  void transitiveExpansionAndReductionAreInverseOfEachOther(@ForAll("posetGenerator") Poset2<Integer> poset) {
-    assertArrayEquals(new Poset2<>(collectElements(poset), new Poset2<>(collectElements(poset), poset.getExpandedArray()).getReducedArray()).getExpandedArray(), poset.getExpandedArray());
+  void transitiveExpansionAndReductionAreInverseOfEachOther(@ForAll("posetGenerator") Poset<Integer> poset) {
+    assertArrayEquals(new Poset<>(collectElements(poset), new Poset<>(collectElements(poset), poset.getExpandedArray()).getReducedArray()).getExpandedArray(), poset.getExpandedArray());
     Statistics.collect(poset.getExpandedArray().length);
   }
 
   @Property(edgeCases = EdgeCasesMode.NONE)
   @Label("Num(TR(arr)) <= Num(TE(arr))")
-  void numberOfBinaryRelationsOfTransitiveReductionIsEqualOrLessThanTransitiveExpansion(@ForAll("posetGenerator") Poset2<Integer> poset) {
+  void numberOfBinaryRelationsOfTransitiveReductionIsEqualOrLessThanTransitiveExpansion(@ForAll("posetGenerator") Poset<Integer> poset) {
     assertTrue(poset.getNumberOfReducedBinaryRelations() <= poset.getNumberOfExpandedBinaryRelations());
     Statistics.collect(poset.getExpandedArray().length);
   }
@@ -314,7 +314,7 @@ public class Poset2Test {
     equals the original one, then we have found a representation of the Poset with 1 more binary relation than the
     transitive expansion.
    */
-  boolean transitiveExpansionContainsTheMaximumNumberOfBinaryRelations(@ForAll("posetGenerator") Poset2<Integer> poset) {
+  boolean transitiveExpansionContainsTheMaximumNumberOfBinaryRelations(@ForAll("posetGenerator") Poset<Integer> poset) {
     int[][] transitiveExpansionArray = poset.getExpandedArray();
     for (int i = 0; i < transitiveExpansionArray.length; i++) {
       for (int j = 0; j < transitiveExpansionArray.length; j++) {
@@ -323,7 +323,7 @@ public class Poset2Test {
           transitiveExpansionArray[i][j] = 1;
           try {
             //check if the resulting Poset equals the original one
-            Poset2<Integer> newPoset = new Poset2<>(collectElements(poset), transitiveExpansionArray);
+            Poset<Integer> newPoset = new Poset<>(collectElements(poset), transitiveExpansionArray);
             if (newPoset.equals(poset)) {
               return false;
             }
@@ -345,7 +345,7 @@ public class Poset2Test {
     equals the original one, then we have found a representation of the Poset with 1 fewer binary relation than the
     transitive reduction.
    */
-  boolean transitiveReductionContainsTheMinimumNumberOfBinaryRelations(@ForAll("posetGenerator") Poset2<Integer> poset) {
+  boolean transitiveReductionContainsTheMinimumNumberOfBinaryRelations(@ForAll("posetGenerator") Poset<Integer> poset) {
     int[][] transitiveReductionArray = poset.getReducedArray();
     for (int i = 0; i < transitiveReductionArray.length; i++) {
       for (int j = 0; j < transitiveReductionArray.length; j++) {
@@ -354,7 +354,7 @@ public class Poset2Test {
           transitiveReductionArray[i][j] = 0;
           try {
             //check if the resulting Poset equals the original one
-            Poset2<Integer> newPoset = new Poset2<>(collectElements(poset), transitiveReductionArray);
+            Poset<Integer> newPoset = new Poset<>(collectElements(poset), transitiveReductionArray);
             if (newPoset.equals(poset)) {
               return false;
             }
@@ -385,7 +385,7 @@ public class Poset2Test {
     1+2+...+N-1 = N*(N-1)/2
    */
   @Provide
-  Arbitrary<Poset2<Integer>> posetGenerator() throws PosetException {
+  Arbitrary<Poset<Integer>> posetGenerator() throws PosetException {
     return Arbitraries.of(3,4,5,6)
       .flatMap(n -> {
         int degreesOfFreedom = n * (n - 1) / 2;
@@ -402,7 +402,7 @@ public class Poset2Test {
 
           try {
             List<Integer> elements = IntStream.range(0,n).boxed().collect(Collectors.toList());
-            return new Poset2<>(elements, poset);
+            return new Poset<>(elements, poset);
           } catch (PosetException e) {
             return null;
           }

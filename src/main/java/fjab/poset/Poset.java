@@ -58,17 +58,15 @@ import java.util.stream.IntStream;
  * It's worth noting that elements with the same number of ≤ cannot be connected (if a ≤ b, a will have at
  * least one more ≤ than b)
  */
-public class Poset2<E> extends AbstractSet<E> {
+public class Poset<E> extends AbstractSet<E> {
 
-  //private final Poset internalPoset;
   private final List<E> sortedElements;
-
   private final int[][] expandedArray;
   private final int[][] reducedArray;
   private final int numberOfExpandedBinaryRelations;
   private final int numberOfReducedBinaryRelations;
 
-  public Poset2(List<E> unsafeList, int[][] unsafeBinaryRelations) {
+  public Poset(List<E> unsafeList, int[][] unsafeBinaryRelations) {
     //as far as the Poset is concerned, we just need to preserve the immutability of the list, not of the
     //elements themselves
     List<E> elements = List.copyOf(unsafeList);
@@ -80,8 +78,6 @@ public class Poset2<E> extends AbstractSet<E> {
     this.reducedArray = PosetUtil.transitiveReduction(expandedArray);
     this.numberOfExpandedBinaryRelations = Util.sum(this.expandedArray);
     this.numberOfReducedBinaryRelations = Util.sum(this.reducedArray);
-
-    //this.internalPoset = new Poset(binaryRelations);
     this.sortedElements = IntStream.of(PosetUtil.sort(expandedArray)).mapToObj(elements::get).collect(Collectors.toList());
   }
 
@@ -90,8 +86,8 @@ public class Poset2<E> extends AbstractSet<E> {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     if (!super.equals(o)) return false;
-    Poset2<?> poset2 = (Poset2<?>) o;
-    return Arrays.deepEquals(expandedArray, poset2.expandedArray);
+    Poset<?> other = (Poset<?>) o;
+    return Arrays.deepEquals(this.expandedArray, other.expandedArray);
   }
 
   @Override

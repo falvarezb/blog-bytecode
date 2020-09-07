@@ -8,10 +8,7 @@ import fjab.poset.error.ReflexivityException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 import static fjab.poset.Util.arrayDeepCopy;
 import static fjab.poset.Util.isSquareMatrix;
@@ -42,18 +39,47 @@ public class PosetUtil {
    * After doing the transitive expansion, it is necessary to verify that the resulting Poset still complies
    * with the antisymmetry property
    * <p>
-   * This method is the inverse of a transitive reduction (https://en.wikipedia.org/wiki/Transitive_reduction)
-   *
-   * @param incidenceMatrix Internal representation of the Poset
-   * @return Original array updated in place
-   * @throws InvalidPosetException Thrown if transitive expansion is not possible
    */
   static int[][] transitiveExpansion(int[][] incidenceMatrix) {
+
+    class Row {
+
+      private final int[] row;
+      private final List<Row> subscribers = new ArrayList<>();
+      Row(int[] row) {
+        this.row = row;
+      }
+
+      void registerSubscriber(Row subscriber) {
+        subscribers.add(subscriber);
+      }
+
+      void notifySubscribers() {
+        subscribers.forEach(s -> s.update(this));
+      }
+
+      /**
+       * bitwise OR between this.row and otherRow.row
+       */
+      void update(Row otherRow) {
+        boolean updated = false;
+        for (int j = 0; j < otherRow.row.length; j++) {
+          if (otherRow.row[j] == 1 && this.row[j] != 1) {
+            updated = true;
+            this.row[j] = 1;
+          }
+        }
+        if (updated) {
+          this.notifySubscribers();
+        }
+      }
+    }
+
     int[][] newArray = arrayDeepCopy(incidenceMatrix);
     //initialisation
-    AuxRowForTransitiveExpansion[] rows = new AuxRowForTransitiveExpansion[newArray.length];
+    Row[] rows = new Row[newArray.length];
     for (int i = 0; i < newArray.length; i++) {
-      rows[i] = new AuxRowForTransitiveExpansion(newArray[i]);
+      rows[i] = new Row(newArray[i]);
     }
 
     //register subscribers
@@ -66,11 +92,11 @@ public class PosetUtil {
     }
 
     //kick-off updates
-    for (AuxRowForTransitiveExpansion row : rows) {
+    for (Row row : rows) {
       row.notifySubscribers();
     }
 
-    //re-build poset
+    //re-build incidence matrix
     for (int i = 0; i < rows.length; i++) {
       newArray[i] = rows[i].row;
     }
@@ -86,8 +112,7 @@ public class PosetUtil {
   }
 
   /**
-   * Returns a new Poset whose internal representation is
-   * the transitive reduction (https://en.wikipedia.org/wiki/Transitive_reduction) of this
+   * Returns the transitive reduction (https://en.wikipedia.org/wiki/Transitive_reduction)
    */
   static int[][] transitiveReduction(int[][] expandedArray) {
     int[][] newArray = arrayDeepCopy(expandedArray);
@@ -130,79 +155,5 @@ public class PosetUtil {
     checkReflexivityAndAntiSymmetryLaws(incidenceMatrix);
   }
 
-  static UnsupportedOperationException uoe() { return new UnsupportedOperationException(); }
 
-  /**
-   * This algorithm consists in sorting the rows by the sum of its elements (as we use 1s and 0s
-   * to represent the binary relations, the sum of the elements of each row is equivalent to counting
-   * the number of binary relations of each element)
-   *
-   * @return Array of sorted labels
-   */
-  static int[] sort(int[][] expandedArray) {
-    //initialisation
-    PosetUtil.AuxRowForSort[] rows = new PosetUtil.AuxRowForSort[expandedArray.length];
-    for (int i = 0; i < expandedArray.length; i++) {
-      rows[i] = new PosetUtil.AuxRowForSort(expandedArray[i], i);
-    }
-
-    Arrays.sort(rows, (o1, o2) -> o2.numberOfBinaryRelations - o1.numberOfBinaryRelations);
-
-    return Arrays.stream(rows).mapToInt(row -> row.label).toArray();
-  }
-
-  static <E> List<E> collectElements(Poset<E> poset) {
-    List<E> elements = new ArrayList<>();
-    poset.iterator().forEachRemaining(elements::add);
-    return elements;
-  }
-
-  /**
-   * Auxiliary object to do the topological sort of the poset
-   */
-  private static class AuxRowForSort {
-    private final int label;
-    private final int numberOfBinaryRelations;
-
-    AuxRowForSort(int[] row, int label) {
-      this.label = label;
-      this.numberOfBinaryRelations = Arrays.stream(row).sum();
-    }
-  }
-
-  /**
-   * Auxiliary object to do the transitive expansion of the poset
-   */
-  private static class AuxRowForTransitiveExpansion {
-
-    private final int[] row;
-    private final List<AuxRowForTransitiveExpansion> subscribers = new ArrayList<>();
-    AuxRowForTransitiveExpansion(int[] row) {
-      this.row = row;
-    }
-
-    void registerSubscriber(AuxRowForTransitiveExpansion subscriber) {
-      subscribers.add(subscriber);
-    }
-
-    void notifySubscribers() {
-      subscribers.forEach(s -> s.update(this));
-    }
-
-    /**
-     * bitwise OR between this.row and otherRow.row
-     */
-    void update(AuxRowForTransitiveExpansion otherRow) {
-      boolean updated = false;
-      for (int j = 0; j < otherRow.row.length; j++) {
-        if (otherRow.row[j] == 1 && this.row[j] != 1) {
-          updated = true;
-          this.row[j] = 1;
-        }
-      }
-      if (updated) {
-        this.notifySubscribers();
-      }
-    }
-  }
 }

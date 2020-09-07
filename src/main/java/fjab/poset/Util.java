@@ -1,7 +1,9 @@
 package fjab.poset;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 
 public class Util {
@@ -64,5 +66,43 @@ public class Util {
 
   public static boolean isSquareMatrix(int[][] arr) {
     return Arrays.stream(arr).mapToInt(row -> row.length).filter(size -> size != arr.length).toArray().length == 0;
+  }
+
+  /**
+   * Returns the indexes of the rows sorted by the sum of its elements in ascending order
+   *
+   * Example
+   * =======
+   * Given:
+   * [[1,2,0],
+   * [0,2,0],
+   * [1,1,2]]
+   *
+   * returns:
+   * [1,0,2]
+   *
+   */
+  static int[] sort(int[][] array) {
+
+    class Row {
+      private final int idx;
+      private final int sum;
+
+      Row(int[] row, int idx) {
+        this.idx = idx;
+        this.sum = Arrays.stream(row).sum();
+      }
+    }
+
+    Row[] rows = new Row[array.length];
+    for (int i = 0; i < array.length; i++) {
+      rows[i] = new Row(array[i], i);
+    }
+    Arrays.sort(rows, (o1, o2) -> o2.sum - o1.sum);
+    return Arrays.stream(rows).mapToInt(row -> row.idx).toArray();
+  }
+
+  static <E> List<E> collectElements(Set<E> set) {
+    return new ArrayList<>(set);
   }
 }

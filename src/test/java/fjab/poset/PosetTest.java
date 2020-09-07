@@ -15,6 +15,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -23,7 +24,6 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static fjab.poset.PosetUtil.buildIncidenceMatrixFromFile;
-import static fjab.poset.PosetUtil.collectElements;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
@@ -203,7 +203,7 @@ public class PosetTest {
   @DisplayName("transitive expansion")
   public void testTransitiveExpansion(String fileName, List<String> elements, int[][] array) throws IOException, PosetException {
     Poset<String> poset = new Poset<>(elements, buildIncidenceMatrixFromFile(Paths.get(fileName)));
-    assertArrayEquals(array, poset.getExpandedBinaryRelations());
+    assertArrayEquals(array, poset.getExpandedArray());
   }
 
   static Stream<Arguments> transitiveExpansionSupplier() {
@@ -245,7 +245,7 @@ public class PosetTest {
   @DisplayName("transitive reduction")
   public void testTransitiveReduction(String fileName, List<String> elements, int[][] array) throws IOException, PosetException {
     Poset<String> poset = new Poset<>(elements, buildIncidenceMatrixFromFile(Paths.get(fileName)));
-    assertArrayEquals(array, poset.getReducedBinaryRelations());
+    assertArrayEquals(array, poset.getReducedArray());
   }
 
   static Stream<Arguments> transitiveReductionSupplier() {
@@ -289,14 +289,14 @@ public class PosetTest {
   @Property(edgeCases = EdgeCasesMode.NONE)
   @Label("TE(TE(arr)) == TE(arr)")
   void transitiveExpansionIsIdempotent(@ForAll("posetGenerator") Poset<Integer> poset) {
-    assertArrayEquals(new Poset<>(collectElements(poset), poset.getExpandedArray()).getExpandedArray(), poset.getExpandedArray());
+    assertArrayEquals(new Poset<>(new ArrayList<>(poset), poset.getExpandedArray()).getExpandedArray(), poset.getExpandedArray());
     Statistics.collect(poset.getExpandedArray().length);
   }
 
   @Property(edgeCases = EdgeCasesMode.NONE)
   @Label("TE(TR(TE(arr))) == TE(arr)")
   void transitiveExpansionAndReductionAreInverseOfEachOther(@ForAll("posetGenerator") Poset<Integer> poset) {
-    assertArrayEquals(new Poset<>(collectElements(poset), new Poset<>(collectElements(poset), poset.getExpandedArray()).getReducedArray()).getExpandedArray(), poset.getExpandedArray());
+    assertArrayEquals(new Poset<>(new ArrayList<>(poset), new Poset<>(new ArrayList<>(poset), poset.getExpandedArray()).getReducedArray()).getExpandedArray(), poset.getExpandedArray());
     Statistics.collect(poset.getExpandedArray().length);
   }
 
@@ -323,7 +323,7 @@ public class PosetTest {
           transitiveExpansionArray[i][j] = 1;
           try {
             //check if the resulting Poset equals the original one
-            Poset<Integer> newPoset = new Poset<>(collectElements(poset), transitiveExpansionArray);
+            Poset<Integer> newPoset = new Poset<>(new ArrayList<>(poset), transitiveExpansionArray);
             if (newPoset.equals(poset)) {
               return false;
             }
@@ -354,7 +354,7 @@ public class PosetTest {
           transitiveReductionArray[i][j] = 0;
           try {
             //check if the resulting Poset equals the original one
-            Poset<Integer> newPoset = new Poset<>(collectElements(poset), transitiveReductionArray);
+            Poset<Integer> newPoset = new Poset<>(new ArrayList<>(poset), transitiveReductionArray);
             if (newPoset.equals(poset)) {
               return false;
             }
@@ -368,6 +368,36 @@ public class PosetTest {
     Statistics.collect(poset.getExpandedArray().length);
     return true;
   }
+
+//  @Property(edgeCases = EdgeCasesMode.NONE)
+//  @Label("Topological sort is correct")
+//  /*
+//    Demonstration: for a given sort [X1, X2 ... Xn], given any 2 elements Xi,Xj such that i<=j, then Xji == 0
+//   */
+//  boolean topologicalSort(@ForAll("posetGenerator") Poset<Integer> poset) {
+//    int[][] incidenceMatrix = poset.getExpandedArray();
+//    int[] topologicalSort = new ArrayList<>(poset);
+//    for (int i = 0; i < transitiveReductionArray.length; i++) {
+//      for (int j = 0; j < transitiveReductionArray.length; j++) {
+//        if (transitiveReductionArray[i][j] == 1) {
+//          //remove 1 binary relation
+//          transitiveReductionArray[i][j] = 0;
+//          try {
+//            //check if the resulting Poset equals the original one
+//            Poset<Integer> newPoset = new Poset<>(new ArrayList<>(poset), transitiveReductionArray);
+//            if (newPoset.equals(poset)) {
+//              return false;
+//            }
+//            //restore the binary relation
+//            transitiveReductionArray[i][j] = 1;
+//          } catch (PosetException ignored) {
+//          }
+//        }
+//      }
+//    }
+//    Statistics.collect(poset.getExpandedArray().length);
+//    return true;
+//  }
 
   /*
     3x3 -> 2+1 degrees of freedom
@@ -390,19 +420,19 @@ public class PosetTest {
       .flatMap(n -> {
         int degreesOfFreedom = n * (n - 1) / 2;
         return new PermutationWithRepetitionArbitrary<>(java.util.Arrays.asList(0, 1), degreesOfFreedom).map(permutation -> {
-          int[][] poset = new int[n][n];
+          int[][] incidenceMatrix = new int[n][n];
           int counter = 0;
           for (int i = 0; i < n; i++) {
-            poset[i][i] = 1;
+            incidenceMatrix[i][i] = 1;
             for (int j = i + 1; j < n; j++) {
-              poset[i][j] = permutation.get(counter++);
-              poset[j][i] = poset[i][j] == 1 ? 0 : 1;
+              incidenceMatrix[i][j] = permutation.get(counter++);
+              incidenceMatrix[j][i] = incidenceMatrix[i][j] == 1 ? 0 : 1;
             }
           }
 
           try {
             List<Integer> elements = IntStream.range(0,n).boxed().collect(Collectors.toList());
-            return new Poset<>(elements, poset);
+            return new Poset<>(elements, incidenceMatrix);
           } catch (PosetException e) {
             return null;
           }

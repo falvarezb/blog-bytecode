@@ -203,7 +203,7 @@ public class PosetTest {
   @DisplayName("transitive expansion")
   public void testTransitiveExpansion(String fileName, List<String> elements, int[][] array) throws IOException, PosetException {
     Poset<String> poset = new Poset<>(elements, buildIncidenceMatrixFromFile(Paths.get(fileName)));
-    assertArrayEquals(array, poset.getExpandedArray());
+    assertArrayEquals(array, poset.getTransitiveExpansion());
   }
 
   static Stream<Arguments> transitiveExpansionSupplier() {
@@ -245,7 +245,7 @@ public class PosetTest {
   @DisplayName("transitive reduction")
   public void testTransitiveReduction(String fileName, List<String> elements, int[][] array) throws IOException, PosetException {
     Poset<String> poset = new Poset<>(elements, buildIncidenceMatrixFromFile(Paths.get(fileName)));
-    assertArrayEquals(array, poset.getReducedArray());
+    assertArrayEquals(array, poset.getTransitiveReduction());
   }
 
   static Stream<Arguments> transitiveReductionSupplier() {
@@ -286,25 +286,22 @@ public class PosetTest {
   //============== PROPERTY-BASED TESTS ===============//
   //===================================================//
 
-  @Property(edgeCases = EdgeCasesMode.NONE)
-  @Label("TE(TE(arr)) == TE(arr)")
-  void transitiveExpansionIsIdempotent(@ForAll("posetGenerator") Poset<Integer> poset) {
-    assertArrayEquals(new Poset<>(new ArrayList<>(poset), poset.getExpandedArray()).getExpandedArray(), poset.getExpandedArray());
-    Statistics.collect(poset.getExpandedArray().length);
+  private List<Integer> elements(int n) {
+    return IntStream.range(0,n).boxed().collect(Collectors.toList());
   }
 
   @Property(edgeCases = EdgeCasesMode.NONE)
-  @Label("TE(TR(TE(arr))) == TE(arr)")
-  void transitiveExpansionAndReductionAreInverseOfEachOther(@ForAll("posetGenerator") Poset<Integer> poset) {
-    assertArrayEquals(new Poset<>(new ArrayList<>(poset), new Poset<>(new ArrayList<>(poset), poset.getExpandedArray()).getReducedArray()).getExpandedArray(), poset.getExpandedArray());
-    Statistics.collect(poset.getExpandedArray().length);
+  @Label("topological sort is preserved when creating a Poset based on the transitive expansion of the incidence matrix of another")
+  void topologicalSortIsPreserved_transitiveExpansion(@ForAll("posetGenerator") Poset<Integer> poset) {
+    assertEquals(new ArrayList<>(new Poset<>(elements(poset.getTransitiveExpansion().length), poset.getTransitiveExpansion())), new ArrayList<>(poset));
+    Statistics.collect(poset.getTransitiveExpansion().length);
   }
 
   @Property(edgeCases = EdgeCasesMode.NONE)
-  @Label("Num(TR(arr)) <= Num(TE(arr))")
-  void numberOfBinaryRelationsOfTransitiveReductionIsEqualOrLessThanTransitiveExpansion(@ForAll("posetGenerator") Poset<Integer> poset) {
-    assertTrue(poset.getNumberOfReducedBinaryRelations() <= poset.getNumberOfExpandedBinaryRelations());
-    Statistics.collect(poset.getExpandedArray().length);
+  @Label("topological sort is preserved when creating a Poset based on the transitive reduction of the incidence matrix of another")
+  void topologicalSortIsPreserved_transitiveReduction(@ForAll("posetGenerator") Poset<Integer> poset) {
+    assertEquals(new ArrayList<>(new Poset<>(elements(poset.getTransitiveExpansion().length), poset.getTransitiveReduction())), new ArrayList<>(poset));
+    Statistics.collect(poset.getTransitiveExpansion().length);
   }
 
   @Property(edgeCases = EdgeCasesMode.NONE)
@@ -315,7 +312,7 @@ public class PosetTest {
     transitive expansion.
    */
   boolean transitiveExpansionContainsTheMaximumNumberOfBinaryRelations(@ForAll("posetGenerator") Poset<Integer> poset) {
-    int[][] transitiveExpansionArray = poset.getExpandedArray();
+    int[][] transitiveExpansionArray = poset.getTransitiveExpansion();
     for (int i = 0; i < transitiveExpansionArray.length; i++) {
       for (int j = 0; j < transitiveExpansionArray.length; j++) {
         if (transitiveExpansionArray[i][j] == 0) {
@@ -334,7 +331,7 @@ public class PosetTest {
         }
       }
     }
-    Statistics.collect(poset.getExpandedArray().length);
+    Statistics.collect(poset.getTransitiveExpansion().length);
     return true;
   }
 
@@ -346,7 +343,7 @@ public class PosetTest {
     transitive reduction.
    */
   boolean transitiveReductionContainsTheMinimumNumberOfBinaryRelations(@ForAll("posetGenerator") Poset<Integer> poset) {
-    int[][] transitiveReductionArray = poset.getReducedArray();
+    int[][] transitiveReductionArray = poset.getTransitiveReduction();
     for (int i = 0; i < transitiveReductionArray.length; i++) {
       for (int j = 0; j < transitiveReductionArray.length; j++) {
         if (transitiveReductionArray[i][j] == 1) {
@@ -365,44 +362,39 @@ public class PosetTest {
         }
       }
     }
-    Statistics.collect(poset.getExpandedArray().length);
+    Statistics.collect(poset.getTransitiveExpansion().length);
     return true;
   }
 
-//  @Property(edgeCases = EdgeCasesMode.NONE)
-//  @Label("Topological sort is correct")
-//  /*
-//    Demonstration: for a given sort [X1, X2 ... Xn], given any 2 elements Xi,Xj such that i<=j, then Xji == 0
-//   */
-//  boolean topologicalSort(@ForAll("posetGenerator") Poset<Integer> poset) {
-//    int[][] incidenceMatrix = poset.getExpandedArray();
-//    int[] topologicalSort = new ArrayList<>(poset);
-//    for (int i = 0; i < transitiveReductionArray.length; i++) {
-//      for (int j = 0; j < transitiveReductionArray.length; j++) {
-//        if (transitiveReductionArray[i][j] == 1) {
-//          //remove 1 binary relation
-//          transitiveReductionArray[i][j] = 0;
-//          try {
-//            //check if the resulting Poset equals the original one
-//            Poset<Integer> newPoset = new Poset<>(new ArrayList<>(poset), transitiveReductionArray);
-//            if (newPoset.equals(poset)) {
-//              return false;
-//            }
-//            //restore the binary relation
-//            transitiveReductionArray[i][j] = 1;
-//          } catch (PosetException ignored) {
-//          }
-//        }
-//      }
-//    }
-//    Statistics.collect(poset.getExpandedArray().length);
-//    return true;
-//  }
+  @Property(edgeCases = EdgeCasesMode.NONE)
+  @Label("Topological sort is correct")
+  /*
+    Demonstration: for a given sort [X1, X2 ... Xn], given any 2 elements Xi,Xj such that i<j, then Xji == 0
+   */
+  boolean topologicalSort(@ForAll("posetGenerator") Poset<Integer> poset) {
+    int[][] incidenceMatrix = poset.getTransitiveExpansion();
+    int[] topologicalSort = poset.stream().mapToInt(i -> i).toArray();
+    for (int i = 0; i < topologicalSort.length; i++) {
+      for (int j = i+1; j < topologicalSort.length; j++) {
+        if (incidenceMatrix[topologicalSort[j]][topologicalSort[i]] == 1) {
+          return false;
+        }
+      }
+    }
+    Statistics.collect(poset.getTransitiveExpansion().length);
+    return true;
+  }
 
   /*
+    Because of the reflexivity and antisymmetry properties, an incidence matrix of dimensions NxN
+    has 1+2+...+N-1 degrees of freedom and by the formula of the arithmetic series:
+    1+2+...+N-1 = N*(N-1)/2
+
+    Examples:
+
     3x3 -> 2+1 degrees of freedom
     1 f f
-    o 1 f -->
+    o 1 f
     o o 1
 
     4x4 -> 3+2+1 degrees of freedom
@@ -411,12 +403,17 @@ public class PosetTest {
     o o 1 f
     o o o 1
 
-    In general, NxN has 1+2+...+N-1 degrees of freedom, and by the formula of the arithmetic series:
-    1+2+...+N-1 = N*(N-1)/2
+    Therefore, in order to generate random NxN incidence matrices, we need to consider permutations of
+    N*(N-1)/2 elements from a population of 2 elements (0 and 1) with replacement.
+
+    Therefore, the total number of NxN incidence matrices is 2^(N*(N-1)/2)
+
+    For simplicity, we will take as elements of the Poset a list of N integers ranging from 0 to N-1
    */
   @Provide
   Arbitrary<Poset<Integer>> posetGenerator() throws PosetException {
-    return Arbitraries.of(3,4,5,6)
+    Integer[] posetSizes = new Integer[]{3,4,5,6};
+    return Arbitraries.of(posetSizes)
       .flatMap(n -> {
         int degreesOfFreedom = n * (n - 1) / 2;
         return new PermutationWithRepetitionArbitrary<>(java.util.Arrays.asList(0, 1), degreesOfFreedom).map(permutation -> {
@@ -431,7 +428,7 @@ public class PosetTest {
           }
 
           try {
-            List<Integer> elements = IntStream.range(0,n).boxed().collect(Collectors.toList());
+            List<Integer> elements = elements(n);
             return new Poset<>(elements, incidenceMatrix);
           } catch (PosetException e) {
             return null;

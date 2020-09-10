@@ -4,90 +4,35 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static fjab.poset.PosetUtil.validateArguments;
+
 /**
  * A Poset (https://en.wikipedia.org/wiki/Partially_ordered_set) is a set of elements with a binary relation
  * defined between them (not necessarily between all of them) that must satisfy the following rules
  * - reflexivity
  * - antisymmetry
  * - transitivity
- *
- * A binary relation with these properties is called "partial order" and is denoted by ≤.
- * The binary relation between the different elements can be represented as a square binary matrix
- * (the elements are ones and zeros) where rows and columns are indexed by the elements of the set.
- * Such a matrix is also called incidence matrix (https://en.wikipedia.org/wiki/Incidence_matrix), where 1 means
- * that 2 elements are related and 0 means that they are not.
- *
- *
- * For instance, given a set of 4 elements {a,b,c,d} and this incidence matrix:
- * 1 1 0 0
- * 0 1 1 0
- * 0 0 1 0
- * 1 0 0 1
- *
- * these are the binary relations:
- * a ≤ a
- * a ≤ b
- * b ≤ b
- * b ≤ c
- * c ≤ c
- * d ≤ a
- * d ≤ d
- *
- *
- * Because of the:
- * - reflexivity property, all elements in the main diagonal must be 1.
- * - antisymmetry property, elements in symmetric positions with respect to the main diagonal cannot be both 1.
- *
- * The above example is the so-called transitive reduction (https://en.wikipedia.org/wiki/Transitive_reduction), a
- * simplified version of the incidence matrix without the transitive relations.
- *
- * After applying the transitive property (transitive expansion), the above example becomes:
- *
- * 1 1 1 0
- * 0 1 1 0
- * 0 0 1 0
- * 1 1 1 1
- *
- *
- * A Poset can be interpreted as a directed acyclic graph (DAG) in which the shortest distance between
- * all pairs of elements that are connected is always 1 (because of the transitivity property).
- * Therefore, as a DAG, it is possible to compute its topological sort.
- * According to https://en.wikipedia.org/wiki/Topological_sorting
- *
- * "topological sort or topological ordering of a directed graph is a linear ordering of its vertices
- * such that for every directed edge uv from vertex u to vertex v, u comes before v in the ordering"
- *
- * In our example, if each element of the poset is identified by its position in the matrix representation,
- * the topological sort is: [d,a,b,c].
- * The topological sort can present ambiguity for elements that are not connected between them.
- *
- * It's worth noting that elements with the same number of ≤ cannot be connected (if a ≤ b, a will have at
- * least one more ≤ than b)
  */
 public class Poset<E> extends AbstractSet<E> {
 
   private final List<E> sortedElements;
-  private final int[][] expandedArray;
-  private final int[][] reducedArray;
-  private final int numberOfExpandedBinaryRelations;
-  private final int numberOfReducedBinaryRelations;
+  private final int[][] transitiveExpansion;
+  private final int[][] transitiveReduction;
 
   /**
    * Creates an immutable Set with the Poset semantics
    * Note: elements of the set can still be mutated (that will not affect topological sort though)
    */
   public Poset(List<E> elements, int[][] incidenceMatrix) {
-    PosetUtil.validateArguments(elements, incidenceMatrix);
+    validateArguments(elements, incidenceMatrix);
 
-    this.expandedArray = PosetUtil.transitiveExpansion(incidenceMatrix);
-    this.reducedArray = PosetUtil.transitiveReduction(expandedArray);
-    this.numberOfExpandedBinaryRelations = Util.sum(this.expandedArray);
-    this.numberOfReducedBinaryRelations = Util.sum(this.reducedArray);
-    this.sortedElements = IntStream.of(Util.sort(expandedArray)).mapToObj(elements::get).collect(Collectors.toList());
+    this.transitiveExpansion = PosetUtil.transitiveExpansion(incidenceMatrix);
+    this.transitiveReduction = PosetUtil.transitiveReduction(transitiveExpansion);
+    this.sortedElements = IntStream.of(Util.sort(transitiveExpansion)).mapToObj(elements::get).collect(Collectors.toList());
   }
 
   /**
-   * The Poset is characterised by its elements and the transitive expansion of the incidence matrix
+   * Two posets are equal is they have the same elements and the same transitive expansion of the incidence matrix
    */
   @Override
   public boolean equals(Object o) {
@@ -95,22 +40,39 @@ public class Poset<E> extends AbstractSet<E> {
     if (o == null || getClass() != o.getClass()) return false;
     if (!super.equals(o)) return false;
     Poset<?> other = (Poset<?>) o;
-    return Arrays.deepEquals(this.expandedArray, other.expandedArray);
+    return Arrays.deepEquals(this.transitiveExpansion, other.transitiveExpansion);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), Arrays.deepHashCode(expandedArray));
+    return Objects.hash(super.hashCode(), Arrays.deepHashCode(transitiveExpansion));
   }
 
   /**
    * All default implementations in AbstractSet are based on iterator()
    * Therefore, overriding this method and size() is enough to have a working implementation of a Set
    */
-  //TODO: change implementation to remove iterator.remove()
   @Override
   public Iterator<E> iterator() {
-    return sortedElements.iterator();
+
+    //We define our own iterator instead of using sortedElements.iterator() as the latter allows mutations
+    //via Iterator.remove()
+    return new Iterator<>() {
+      int counter = 0;
+
+      @Override
+      public boolean hasNext() {
+        return counter < sortedElements.size();
+      }
+
+      @Override
+      public E next() {
+        if (!hasNext()) {
+          throw new NoSuchElementException();
+        }
+        return sortedElements.get(counter++);
+      }
+    };
   }
 
   @Override
@@ -118,29 +80,22 @@ public class Poset<E> extends AbstractSet<E> {
     return sortedElements.size();
   }
 
-  public int[][] getExpandedArray() {
-    return expandedArray;
+  public int[][] getTransitiveExpansion() {
+    return transitiveExpansion;
   }
 
-  public int[][] getReducedArray() {
-    return reducedArray;
-  }
-
-  public int getNumberOfReducedBinaryRelations() {
-    return numberOfReducedBinaryRelations;
-  }
-
-  public int getNumberOfExpandedBinaryRelations() {
-    return numberOfExpandedBinaryRelations;
+  public int[][] getTransitiveReduction() {
+    return transitiveReduction;
   }
 
   /**
    * The Poset is characterised by its elements and the transitive expansion of the incidence matrix
+   * The elements of the set are printed out in topological order
    */
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    for (int[] ints : expandedArray) {
+    for (int[] ints : transitiveExpansion) {
       for (int anInt : ints) {
         sb.append(" ").append(anInt);
       }

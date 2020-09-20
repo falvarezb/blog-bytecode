@@ -1,0 +1,1 @@
+dot -Tpng poset_graph.dot -o outfile.png

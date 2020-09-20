@@ -1,0 +1,19 @@
+strict digraph G {
+  1 [ label="a" ];
+  2 [ label="b" ];
+  3 [ label="c" ];
+  4 [ label="d" ];
+  5 [ label="e" ];
+  6 [ label="f" ];
+  7 [ label="g" ];
+  8 [ label="h" ];
+  1 -> 4;
+  2 -> 4
+  2 -> 5;
+  3 -> 5;
+  3 -> 8;
+  4 -> 6;
+  4 -> 7;
+  4 -> 8;
+  5 -> 7;
+}

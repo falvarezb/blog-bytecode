@@ -1,9 +1,7 @@
 package fjab.poset;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Stream;
 
 public class Util {
@@ -100,9 +98,5 @@ public class Util {
     }
     Arrays.sort(rows, (o1, o2) -> o2.sum - o1.sum);
     return Arrays.stream(rows).mapToInt(row -> row.idx).toArray();
-  }
-
-  static <E> List<E> collectElements(Set<E> set) {
-    return new ArrayList<>(set);
   }
 }

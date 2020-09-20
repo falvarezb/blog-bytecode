@@ -32,7 +32,7 @@ public class Poset<E> extends AbstractSet<E> {
   }
 
   /**
-   * Two posets are equal is they have the same elements and the same transitive expansion of the incidence matrix
+   * Two posets are equal if they have the same elements and the same transitive expansion of the incidence matrix
    */
   @Override
   public boolean equals(Object o) {

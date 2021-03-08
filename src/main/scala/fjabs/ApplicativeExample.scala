@@ -8,9 +8,11 @@ import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.util.Try
 
+case class Example(a: String)
+
 object ApplicativeExample extends App {
 
-  val f1: Future[Int] = Applicative[Future].map2(Future{1}, Future{2}){_ + _}
+  val f1: Future[String] = Applicative[Future].map2(Future{"ff"}, Future{Example("3")}){_ + _}
   println(Await.result(f1, Duration.Inf))
 
   val f2: Future[Int] = (Future{1}, Future{2}).mapN(_ + _)

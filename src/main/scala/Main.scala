@@ -10,32 +10,11 @@ import scala.util.{Failure, Success, Try}
 object Main extends LazyLogging {
 
   def main(args: Array[String]): Unit = {
-    example2()
+    example1()
+    //example2()
   }
 
-  def example2(): Unit = {
-    def asyncJob(): Future[Int] = {
-      evilFunction()
-
-      //async call
-      Future {
-        logger.info("io call running in new thread")
-        Thread.sleep(5000)
-        3
-      }
-    }
-
-    def evilFunction() = throw new Exception
-
-    val f = asyncJob()
-    f.onComplete {
-      case Success(value) => logger.info(value.toString)
-      case Failure(exception) => logger.info("error")
-    }
-    Await.result(f, 1 seconds)
-  }
-
-  def main(): Unit = {
+  def example1(): Unit = {
 
     def recordTime(requestTimestamp: Long): PartialFunction[Try[_], Unit] = {
       case Success(_) =>
@@ -71,19 +50,25 @@ object Main extends LazyLogging {
     logger.info(Await.result(f, 10 seconds).toString)
   }
 
-//  def main(args: Array[String]): Unit = {
-//    val requestTimestamp = System.currentTimeMillis()
-//    val f = asyncJob().
-//      map{
-//        i: Int => {
-//          i + 1
-//        }
-//      }
-//      .andThen{
-//        recordTime(requestTimestamp)
-//      }
-//
-//    logger.info(Await.result(f, 10 seconds).toString)
-//  }
+  def example2(): Unit = {
+    def asyncJob(): Future[Int] = {
+      evilFunction()
 
+      //async call
+      Future {
+        logger.info("io call running in new thread")
+        Thread.sleep(5000)
+        3
+      }
+    }
+
+    def evilFunction() = throw new Exception
+
+    val f = asyncJob()
+    f.onComplete {
+      case Success(value) => logger.info(value.toString)
+      case Failure(exception) => logger.info("error")
+    }
+    Await.result(f, 1 seconds)
+  }
 }

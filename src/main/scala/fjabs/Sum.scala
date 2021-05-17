@@ -6,11 +6,18 @@ trait Semigroup[A] {
 }
 
 object Semigroup {
+  //Summoner method
   def apply[A: Semigroup]: Semigroup[A] = implicitly[Semigroup[A]]
 
+  //Constructor
+  def instance[A](f: (A, A) => A): Semigroup[A] = (a1: A, a2: A) => f(a1, a2)
+
+  //Type class instances
   implicit val intSemigroup = new Semigroup[Int] {
     override def combine(a1: Int, a2: Int): Int = a1 + a2
   }
+
+  //implicit val intSemigroup2: Semigroup[Int] = instance((a1,a2) => a1+a2)
 
   implicit val stringSemigroup = new Semigroup[String] {
     override def combine(a1: String, a2: String): String = a1 + a2
@@ -26,7 +33,9 @@ final case class Pair[A, B](first: A, second: B)
 object Monoid {
 
   import Semigroup._
-  def apply[A: Monoid]: Monoid[A] = implicitly[Monoid[A]]
+  //Summoner method
+  //def apply[A: Monoid]: Monoid[A] = implicitly[Monoid[A]]
+  def apply[A](implicit ev: Monoid[A]): Monoid[A] = ev
 
   implicit def intMonoid: Monoid[Int] = new Monoid[Int] {
     override def combine(a1: Int, a2: Int): Int = intSemigroup.combine(a1, a2) //implicit derivation results in an infinitely recursive call

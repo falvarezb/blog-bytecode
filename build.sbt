@@ -4,9 +4,18 @@ version := "1.0"
 
 scalaVersion := "2.12.4"
 
-libraryDependencies ++= Seq(
-  "org.scalatest" %% "scalatest" % "3.0.3" % "test"
-)
+libraryDependencies ++= {
+  val circeV     = "0.11.1"
+
+  Seq(
+    "org.scalatest" %% "scalatest" % "3.0.3" % "test",
+    "io.circe" %% "circe-core" % circeV,
+    "io.circe" %% "circe-generic" % circeV,
+    "io.circe" %% "circe-parser" % circeV,
+    "io.circe" %% "circe-jawn" % circeV,
+    "io.circe" %% "circe-optics" % "0.11.0"
+  )
+}
 
 scalacOptions ++= Seq(
   "-target:jvm-1.8",

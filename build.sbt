@@ -14,14 +14,8 @@ scalacOptions ++= Seq(
  "-Xdisable-assertions"
 )
 
-//scalacOptions in Runtime ++= Seq(
-//  //"-Xdisable-assertions"
-//  "-J-da"
-//)
-
 javaOptions in Universal ++= Seq(
-  "-Dfile.encoding=UTF-8",
-  "-da"
+  "-Dfile.encoding=UTF-8"
 )
 
 mainClass in Compile := Some("Example")

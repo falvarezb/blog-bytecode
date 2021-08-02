@@ -10,12 +10,10 @@ object Example {
     java JVM option to enable assertions: -ea
    */
   def main(args: Array[String]): Unit = {
-    assert(false)
     println("hello world")
   }
 
   def example(): Boolean = {
-    assert(false)
     println("hello world")
     true
   }

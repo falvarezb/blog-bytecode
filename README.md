@@ -1,4 +1,13 @@
-# Functional programming examples
+# Type classes
+
+Type class pattern components:
+
+- type class itself: interface the represents some functionality for a generic type
+- instances of a type class for particular types
+- interface methods that accept instances of the type class as implicit parameters: interface objects and interface sintax
+
+
+# Functional effects
 
 https://blog.softwaremill.com/final-tagless-seen-alive-79a8d884691d
 

@@ -22,6 +22,14 @@ object Semigroup {
   implicit val stringSemigroup = new Semigroup[String] {
     override def combine(a1: String, a2: String): String = a1 + a2
   }
+
+  implicit val boolAndSemigroup = new Semigroup[Boolean] {
+    override def combine(a1: Boolean, a2: Boolean): Boolean = a1 && a2
+  }
+
+  implicit def setUnionSemigroup[A] = new Semigroup[Set[A]] {
+    override def combine(a1: Set[A], a2: Set[A]): Set[A] = a1 union a2
+  }
 }
 
 //A monoid is a semigroup with an empty value
@@ -47,10 +55,22 @@ object Monoid {
     override def empty: String = ""
   }
 
+  implicit def boolAndMonoid: Monoid[Boolean] = new Monoid[Boolean] {
+    override def empty: Boolean = true
+    override def combine(a1: Boolean, a2: Boolean): Boolean = boolAndSemigroup.combine(a1, a2)
+  }
+
+  implicit def setUnionMonoid[A]: Monoid[Set[A]] = new Monoid[Set[A]] {
+    override def empty: Set[A] = Set.empty
+    override def combine(a1: Set[A], a2: Set[A]): Set[A] = setUnionSemigroup.combine(a1, a2)
+  }
+
 //  implicit def multiplicativeMonoid: Monoid[Int] = new Monoid[Int] {
 //    override def combine(a1: Int, a2: Int): Int = a1 * a2
 //    override def empty: Int = 1
 //  }
+
+  //====== TYPECLASS DERIVATION ======
 
   //for any Semigroup[A], there is a Monoid[Option[A]]
   implicit def optionInstance[A: Semigroup]: Monoid[Option[A]] = new Monoid[Option[A]] {
@@ -64,7 +84,7 @@ object Monoid {
     }
   }
 
-  //typeclass derivation
+  //derivation of Monoid[Pair[A,B]] from Monoid[A] and Monoid[B]
   implicit def tupleToPairInstance[A: Monoid, B: Monoid]: Monoid[Pair[A,B]] = new Monoid[Pair[A,B]] {
     override def combine(a: Pair[A, B], b: Pair[A, B]): Pair[A, B] = Pair(Monoid[A].combine(a.first, b.first), Monoid[B].combine(a.second, b.second))
     override def empty: Pair[A, B] = Pair(Monoid[A].empty, Monoid[B].empty)
@@ -81,6 +101,9 @@ object Sum extends App {
   //println(sum(List(1,2,3,4))(Monoid.multiplicativeMonoid))
   println(sum(List(Pair(1,"2"), Pair(3,"4"))))
   println(sum(List(Option(2), Option(3), None)))
+  println(sum(List(Option(true), Option(true), None)))
+  println(Monoid[Set[Int]].combine(Set(1,2), Set(2,3)))
+  println(sum(List(Option(Set(1,2)), Option(Set(2,3)), None)))
 
 }
 

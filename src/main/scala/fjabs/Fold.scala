@@ -3,7 +3,7 @@ package fjabs
 import fjabs.Branch.branch
 import fjabs.FoldableAPI._
 
-sealed abstract class Tree[A]
+sealed abstract class Tree[+A]
 final case class Leaf[A](value: A) extends Tree[A]
 final case class Branch[A](value: A, left: Tree[A], right: Tree[A]) extends Tree[A]
 object Branch {
@@ -16,7 +16,7 @@ trait FoldLeft[F[_]] {
   def foldLeft[A, B](xs: F[A], b: B, f: (B, A) => B): B
 }
 
-//FoldLeft represents a type that can be folded without any specific order
+//Fold represents a type that can be folded without any specific order
 trait Fold[F[_]] {
   def fold[A](xs: F[A], b: A, f: (A, A) => A): A
 }

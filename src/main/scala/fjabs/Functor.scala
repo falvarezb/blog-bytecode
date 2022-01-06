@@ -128,8 +128,8 @@ object Applicative {
 object Main extends App {
   def combine[F[_], A, B](fa: F[A], fb: F[B])(implicit  ap: Applicative[F]): F[(A, B)] = ap.product(fa, fb)
   def print[A](a: A)(implicit p: Printable[A]): String = p.format(a)
-  def encode[A](a: A)(implicit c: Codec[A]): String = c.encode(a)
-  def decode[A](s: String)(implicit c: Codec[A]): String = c.decode(s)
+  def encode[A](value: A)(implicit c: Codec[A]): String = c.encode(value)
+  def decode[A](value: String)(implicit c: Codec[A]): A = c.decode(value)
 
   println(combine(Option("dd"), Option(1)))
 
@@ -138,6 +138,8 @@ object Main extends App {
   println(tree.map(_*2))
 
   println(print(2.8))
+  println(encode(8))
+  println(decode[Int]("8"))
 
 
 }
